@@ -1,0 +1,13 @@
+---
+import { driveMedia } from '../lib/media.mjs';
+const { projects } = Astro.props;
+---
+<dialog id="project-dialog" aria-labelledby="dialog-title">
+  <div class="dialog-shell"><header class="dialog-header"><h2 id="dialog-title"></h2><button class="dialog-close" aria-label="Close project" autofocus><span aria-hidden="true">×</span></button></header>
+    <div id="dialog-media"></div><div class="dialog-info"><p id="dialog-description"></p><p id="media-status" class="visually-hidden" role="status"></p></div>
+  </div>
+</dialog>
+<div hidden id="project-templates">{projects.map(project => <template data-project-template={project._id} data-title={project.title} data-description={project.description || ''} data-embed={driveMedia(project.driveUrl)?.embed || ''}>
+  {(!driveMedia(project.driveUrl) || project.kind === 'photo') && <div class="photo-gallery">{(project.kind === 'photo' ? project.photos : [{ url: project.cover, alt: project.alt }]).filter(photo => photo?.url).map(photo => <figure><img src={photo.url} alt={photo.alt} width="1400" height="900" loading="lazy" /></figure>)}</div>}
+</template>)}</div>
+<script src="../scripts/dialog.ts"></script>

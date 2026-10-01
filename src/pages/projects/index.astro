@@ -1,0 +1,36 @@
+---
+import '../../styles/site.css';
+import { loadContent } from '../../lib/content.mjs';
+import ProjectCard from '../../components/ProjectCard.astro';
+import ProjectDialog from '../../components/ProjectDialog.astro';
+const { demo, settings, projects } = await loadContent({ ...import.meta.env, ...process.env });
+const logo = settings.logo || '/nrvisual-logo-transparent.png';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>All projects | {settings.brandName}</title>
+    <meta name="description" content={`Explore all photography and film projects by ${settings.brandName}.`} />
+    <meta name="theme-color" content="#11120f" />
+    {demo && <meta name="robots" content="noindex,nofollow" />}
+    {Astro.site && <link rel="canonical" href={new URL('/projects/', Astro.site)} />}
+    <link rel="icon" type="image/png" href="/nr-favicon.png" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label={`${settings.brandName} home`}><img src={logo} alt={settings.brandName} width="1636" height="310" /></a>
+      <nav aria-label="Main navigation"><a href="/#work">Work</a><a href="/#services">Services</a><a href="/#about">Contact</a></nav>
+    </header>
+    <main id="main" class="projects-page">
+      <div class="projects-heading"><a class="back-link" href="/#work">← Back to featured work</a><h1>ALL PROJECTS</h1></div>
+      <div class="projects-grid">{projects.map((project, index) => <ProjectCard project={project} index={index} demo={demo} />)}</div>
+      {!projects.length && <p class="empty-state">New projects are on the way.</p>}
+    </main>
+    <footer class="footer"><img class="footer-logo" src={logo} alt={settings.brandName} width="1636" height="310" loading="lazy" /><p>© {new Date().getFullYear()} {settings.brandName}. All rights reserved.</p></footer>
+    <ProjectDialog projects={projects} />
+    <script src="../../scripts/motion.ts"></script>
+  </body>
+</html>

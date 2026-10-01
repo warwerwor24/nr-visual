@@ -1,0 +1,80 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { driveMedia, publishedProjects, socialUrl, whatsappUrl } from '../src/lib/media.mjs';
+import { loadContent } from '../src/lib/content.mjs';
+
+test('Drive links are normalized and preserve restricted-link resource keys', () => {
+  const id = 'abcdefghijklmnop_123-456';
+  const media = driveMedia(`https://drive.google.com/file/d/${id}/view?usp=sharing&resourcekey=0-abc`);
+  assert.equal(media.embed, `https://drive.google.com/file/d/${id}/preview?resourcekey=0-abc`);
+  assert.equal(driveMedia(`https://drive.google.com/open?id=${id}`).open, `https://drive.google.com/file/d/${id}/view`);
+  for (const bad of ['javascript:alert(1)', `https://drive.google.com.evil.com/file/d/${id}/view`, `http://drive.google.com/file/d/${id}/view`, `https://user@drive.google.com/file/d/${id}/view`, `https://drive.google.com/file/d/${id}/view?resourcekey=<bad>`, 'https://drive.google.com/drive/folders/test', 'https://drive.google.com/file/d/tiny/view', null]) assert.equal(driveMedia(bad), null);
+});
+
+test('only published, unique video projects can be selected as highlights', () => {
+  const video = { _id: 'one', kind: 'video' };
+  assert.deepEqual(publishedProjects([null, video, video, { _id: 'drafts.two', kind: 'video' }, { _id: 'versions.release.three', kind: 'video' }, { _id: 'photo', kind: 'photo' }], true), [video]);
+});
+
+test('contact URLs cannot lead to arbitrary hosts or scripts', () => {
+  assert.match(whatsappUrl('+62 812-3456-7890'), /^https:\/\/wa.me\/6281234567890\?/);
+  assert.equal(whatsappUrl('081234567890'), null);
+  assert.equal(socialUrl('https://www.instagram.com/nrvisual/', 'instagram.com'), 'https://www.instagram.com/nrvisual/');
+  assert.equal(socialUrl('https://instagram.com.evil.test/user', 'instagram.com'), null);
+  assert.equal(socialUrl('javascript:alert(1)', 'linkedin.com'), null);
+});
+
+test('demo has exactly 9 highlights and 15 distinct collage samples, release fails closed', async () => {
+  const result = await loadContent({});
+  assert.equal(result.highlights.length, 9);
+  assert.equal(new Set(result.collage.map(p => p._id)).size, 15);
+  await assert.rejects(() => loadContent({ REQUIRE_PRODUCTION: '1' }), /Release blocked/);
+});
+
+test('CMS errors fail the build instead of replacing a live site with demo data', async t => {
+  t.mock.method(globalThis, 'fetch', async () => ({ ok: false, status: 503 }));
+  await assert.rejects(() => loadContent({ SANITY_STUDIO_PROJECT_ID: 'example' }), /Sanity could not be read/);
+});
+
+test('release allows an empty real portfolio but still requires branding and a canonical URL', async t => {
+  const settings = { brandName: 'NR Visual', heroText: 'Make every idea matter', aboutText: 'Eight years of experience.', logo: 'logo', shareImage: 'share', whatsapp: '6281234567890', instagram: 'https://instagram.com/nrvisual', linkedin: 'https://linkedin.com/in/nrvisual' };
+  t.mock.method(globalThis, 'fetch', async () => ({ ok: true, json: async () => ({ result: settings }) }));
+  const env = { SANITY_STUDIO_PROJECT_ID: 'example', REQUIRE_PRODUCTION: '1', SITE_URL: 'https://example.com' };
+  const content = await loadContent(env);
+  assert.equal(content.demo, false);
+  assert.deepEqual(content.projects, []);
+  assert.deepEqual(content.highlights, []);
+  assert.deepEqual(content.collage, []);
+  await assert.rejects(() => loadContent({ ...env, SITE_URL: '' }), /canonical HTTPS/);
+  settings.logo = '';
+  await assert.rejects(() => loadContent(env), /complete Website settings > logo/);
+});
+
+test('CMS requests explicitly use published perspective and handle unpublish and reorder', async t => {
+  let requested;
+  t.mock.method(globalThis, 'fetch', async url => {
+    requested = url;
+    return { ok: true, json: async () => ({ result: { brandName: 'NR', highlights: [null, { _id: 'b', title: 'B', kind: 'video', cover: 'cover', alt: 'B', driveUrl: 'https://drive.google.com/file/d/abcdefghijk/view' }, { _id: 'a', title: 'A', kind: 'video', cover: 'cover', alt: 'A', driveUrl: 'https://drive.google.com/file/d/abcdefghijkl/view' }], collage: [] } }) };
+  });
+  const content = await loadContent({ SANITY_STUDIO_PROJECT_ID: 'example' });
+  assert.equal(requested.searchParams.get('perspective'), 'published');
+  assert.deepEqual(content.highlights.map(p => p._id), ['b', 'a']);
+  assert.equal(content.demo, false);
+});
+
+test('all projects includes unfeatured work, excludes drafts and validates its media', async t => {
+  const video = { _id: 'featured', title: 'Featured', kind: 'video', cover: 'cover', alt: 'Featured', driveUrl: 'https://drive.google.com/file/d/abcdefghijk/view' };
+  const photo = { _id: 'unfeatured', title: 'Unfeatured', kind: 'photo', cover: 'cover', alt: 'Cover', photos: [{ url: 'photo', alt: 'Product photograph' }] };
+  let requested;
+  t.mock.method(globalThis, 'fetch', async url => {
+    requested = url;
+    return { ok: true, json: async () => ({ result: { highlights: [video], collage: [], projects: [photo, video, photo, { ...video, _id: 'drafts.hidden' }, null] } }) };
+  });
+  const content = await loadContent({ SANITY_STUDIO_PROJECT_ID: 'example' });
+  assert.deepEqual(content.projects.map(item => item._id), ['unfeatured', 'featured']);
+  assert.deepEqual(content.highlights.map(item => item._id), ['featured']);
+  assert.match(requested.searchParams.get('query'), /"projects":\*\[_type == "project"\]/);
+  photo.driveUrl = '';
+  photo.kind = 'video';
+  await assert.rejects(() => loadContent({ SANITY_STUDIO_PROJECT_ID: 'example' }), /Invalid Drive URL: Unfeatured/);
+});
