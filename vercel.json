@@ -5,6 +5,11 @@
   "outputDirectory": "dist",
   "redirects": [
     {
+      "source": "/admin/",
+      "destination": "https://nr-visual-n4rtv48x.sanity.studio/",
+      "permanent": false
+    },
+    {
       "source": "/admin/:path*",
       "destination": "https://nr-visual-n4rtv48x.sanity.studio/",
       "permanent": false
