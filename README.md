@@ -64,6 +64,13 @@ node scripts/check-studio-assets.mjs
 
 Deploy admin online memakai base path `/` karena Sanity hosting melayani file dari `/static/`. Script deploy mengatur `SANITY_STUDIO_BASEPATH=/` khusus proses tersebut. Build website dan Studio lokal tetap memakai `/admin`. Pemeriksaan asset memastikan CSS dan JavaScript online merespons 200 tanpa dialihkan ke Dashboard.
 
+## Popup project dan format video
+
+- Di **Projects → Video format**, pilih Landscape 16:9, Portrait 9:16, Square 1:1, atau Portrait 4:5, lalu **Publish**. Video Google Drive menggunakan format pilihan ini; proyek lama tanpa pilihan memakai 16:9.
+- Popup lebih besar dan menyesuaikan format video serta ruang layar. Arrow kiri/kanan, tombol keyboard kiri/kanan, dan cover di bawah dapat membuka semua project terpublikasi, termasuk yang tidak featured. Deretan menampilkan hingga 5 cover; next menggesernya satu cover hingga mencapai akhir, lalu navigasi kembali ke awal.
+- Saat berpindah, player sebelumnya dilepas agar tidak terus memutar. Escape/tombol × menutup dengan animasi dan mengembalikan fokus ke cover asal. Reduced motion tetap didukung.
+- Pemeriksaan browser: `node scripts/check-project-dialog.mjs` dengan preview di port 4322 dan Playwright tersedia melalui `PLAYWRIGHT_MODULE`. Tujuh project uji hanya disisipkan ke respons browser lokal; tidak dibuat di Sanity atau website publik.
+
 ## Vercel dan pembaruan otomatis
 
 1. Masukkan folder proyek ini ke repository milik sendiri, tanpa `.env`, `node_modules`, folder `work`, atau `.vercel`. Hubungkan repository ke Vercel.

@@ -13,6 +13,11 @@ export function driveMedia(value) {
   } catch { return null; }
 }
 
+export function videoAspectRatio(format) {
+  const ratios = { '16:9': 16 / 9, '9:16': 9 / 16, '1:1': 1, '4:5': 4 / 5 };
+  return Object.hasOwn(ratios, format) ? ratios[format] : 16 / 9;
+}
+
 export function socialUrl(value, host) {
   try {
     const url = new URL(value);

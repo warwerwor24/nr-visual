@@ -3,7 +3,7 @@ import '../styles/site.css';
 import { loadContent } from '../lib/content.mjs';
 import ProjectCard from '../components/ProjectCard.astro';
 import ProjectDialog from '../components/ProjectDialog.astro';
-const { demo, settings, highlights, collage } = await loadContent({ ...import.meta.env, ...process.env });
+const { demo, settings, highlights, collage, projects } = await loadContent({ ...import.meta.env, ...process.env });
 const logo = settings.logo || '/nrvisual-logo-transparent.png';
 const whatsapp = settings.whatsapp || 'https://wa.me/628176383770';
 const instagram = settings.instagram || 'https://www.instagram.com/ivalrz/';
@@ -20,7 +20,7 @@ const portfolioBrands = [
 ];
 const clientLogos = settings.clientLogos?.length ? settings.clientLogos : demo ? portfolioBrands : [];
 const portrait = settings.heroPortrait?.url || (demo ? '/hero-portrait-cover.png' : null);
-const all = [...new Map([...highlights, ...collage].map(project => [project._id, project])).values()];
+const all = [...new Map([...projects, ...highlights, ...collage].map(project => [project._id, project])).values()];
 const services = [
   ['Brand Campaign Video', 'Films for new ideas, new products and the moments a brand wants to be seen.'],
   ['Event Videography', 'The atmosphere, the people and everything that makes the moment worth keeping.'],

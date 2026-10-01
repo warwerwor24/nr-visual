@@ -3,6 +3,10 @@ const media = document.querySelector<HTMLDivElement>('#dialog-media')!;
 const title = document.querySelector<HTMLElement>('#dialog-title')!;
 const description = document.querySelector<HTMLElement>('#dialog-description')!;
 const status = document.querySelector<HTMLElement>('#media-status')!;
+const templates = [...document.querySelectorAll<HTMLTemplateElement>('template[data-project-template]')];
+const thumbnails = [...dialog.querySelectorAll<HTMLButtonElement>('[data-dialog-project]')];
+const arrows = [...dialog.querySelectorAll<HTMLButtonElement>('.dialog-arrow')];
+let activeIndex = 0;
 let trigger: HTMLButtonElement | null = null;
 let loadTimer: ReturnType<typeof setTimeout> | undefined;
 const contentItems = [media, title, description];
@@ -20,36 +24,55 @@ function imageErrors(root: ParentNode) {
 }
 imageErrors(document);
 
+function showProject(index: number, switching = false) {
+  clearMedia();
+  activeIndex = index;
+  const template = templates[index];
+  const ratio = Number(template.dataset.ratio);
+  dialog.style.setProperty('--media-ratio', String(Number.isFinite(ratio) && ratio > 0 ? ratio : 16 / 9));
+  title.textContent = template.dataset.title || '';
+  description.textContent = template.dataset.description || '';
+  arrows.forEach(button => { button.disabled = templates.length < 2; });
+  thumbnails.forEach(button => { button.setAttribute('aria-pressed', String(button.dataset.dialogProject === template.dataset.projectTemplate)); });
+  if (template.dataset.embed) {
+    status.textContent = 'Loading video player…';
+    const iframe = document.createElement('iframe');
+    iframe.className = 'video-frame';
+    iframe.title = `Video: ${template.dataset.title}`;
+    iframe.allow = 'fullscreen';
+    iframe.allowFullscreen = true;
+    iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+    iframe.src = template.dataset.embed;
+    iframe.addEventListener('load', () => {
+      if (!iframe.isConnected) return;
+      clearTimeout(loadTimer);
+      status.textContent = 'Video player loaded.';
+    });
+    loadTimer = setTimeout(() => { status.textContent = 'The video player is taking longer than usual to load.'; }, 12000);
+    media.append(iframe);
+  } else {
+    media.append(template.content.cloneNode(true));
+    imageErrors(media);
+  }
+  if (switching) {
+    thumbnails[index]?.scrollIntoView({ block: 'nearest', inline: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      contentAnimations = contentItems.map(element => element.animate([
+        { opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'translateY(0)' },
+      ], { duration: 220, easing: 'ease-out', fill: 'both' }));
+    }
+  }
+}
+
 document.querySelectorAll<HTMLButtonElement>('button[data-project]').forEach(button => {
   button.addEventListener('click', () => {
-    const template = [...document.querySelectorAll<HTMLTemplateElement>('template[data-project-template]')].find(item => item.dataset.projectTemplate === button.dataset.project);
-    if (!template) return;
+    const index = templates.findIndex(item => item.dataset.projectTemplate === button.dataset.project);
+    if (index < 0) return;
     const card = button.getBoundingClientRect();
     trigger = button;
-    title.textContent = template.dataset.title || '';
-    description.textContent = template.dataset.description || '';
-    status.textContent = '';
-    media.replaceChildren();
-    if (template.dataset.embed) {
-      status.textContent = 'Loading video player…';
-      const iframe = document.createElement('iframe');
-      iframe.className = 'video-frame';
-      iframe.title = `Video: ${template.dataset.title}`;
-      iframe.allow = 'fullscreen';
-      iframe.allowFullscreen = true;
-      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
-      iframe.src = template.dataset.embed;
-      iframe.addEventListener('load', () => {
-        clearTimeout(loadTimer);
-        status.textContent = 'Video player loaded.';
-      });
-      loadTimer = setTimeout(() => { status.textContent = 'The video player is taking longer than usual to load.'; }, 12000);
-      media.append(iframe);
-    } else {
-      media.append(template.content.cloneNode(true));
-      imageErrors(media);
-    }
+    showProject(index);
     dialog.showModal();
+    thumbnails[index]?.scrollIntoView({ block: 'nearest', inline: 'start', behavior: 'instant' });
     const panel = dialog.getBoundingClientRect();
     dialog.style.setProperty('--open-x', `${card.left + card.width / 2 - panel.left - panel.width / 2}px`);
     dialog.style.setProperty('--open-y', `${card.top + card.height / 2 - panel.top - panel.height / 2}px`);
@@ -62,6 +85,27 @@ document.querySelectorAll<HTMLButtonElement>('button[data-project]').forEach(but
       ], { duration: 220, delay: 440 + index * 60, easing: 'cubic-bezier(.16, 1, .3, 1)', fill: 'both' }));
     }
   });
+});
+
+function navigate(direction: number) {
+  if (!dialog.open || dialog.classList.contains('is-closing') || templates.length < 2) return;
+  showProject((activeIndex + direction + templates.length) % templates.length, true);
+}
+document.querySelector('.dialog-prev')!.addEventListener('click', () => navigate(-1));
+document.querySelector('.dialog-next')!.addEventListener('click', () => navigate(1));
+thumbnails.forEach((button, index) => button.addEventListener('click', () => {
+  if (index !== activeIndex && !dialog.classList.contains('is-closing')) showProject(index, true);
+}));
+dialog.addEventListener('keydown', event => {
+  if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+    event.preventDefault();
+    navigate(event.key === 'ArrowLeft' ? -1 : 1);
+  }
+});
+dialog.addEventListener('transitionend', event => {
+  if (event.target === dialog && event.propertyName === 'width' && dialog.open && !dialog.classList.contains('is-closing')) {
+    thumbnails[activeIndex]?.scrollIntoView({ block: 'nearest', inline: 'start', behavior: 'instant' });
+  }
 });
 function clearMedia() {
   contentAnimations.forEach(animation => animation.cancel());

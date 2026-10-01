@@ -119,20 +119,30 @@
 .hero-description p span{display:block}
 .about h2{font-size:clamp(42px,7.4vw,118px)}
 .about-tagline{text-align:center;margin-top:24px;font-size:clamp(18px,2.5vw,36px);font-weight:600;letter-spacing:-.035em}
-dialog{width:min(820px,90vw);max-height:84dvh;border:1px solid #ffffff30;border-radius:24px;background:#11120f35;backdrop-filter:blur(24px) saturate(130%);-webkit-backdrop-filter:blur(24px) saturate(130%);color:#f4f4f4;box-shadow:0 24px 80px #0004}
+dialog{--media-ratio:1.777778;--media-width:min(1080px,calc(100vw - 176px),calc((100dvh - 290px)*var(--media-ratio)));width:calc(var(--media-width) + 152px);max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);border:0;border-radius:0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;color:#f4f4f4;box-shadow:none;overflow:auto;padding:6px}
 dialog::backdrop{background:#05060430;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-.dialog-shell{padding:24px}
+.dialog-stage{position:relative;display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:14px;align-items:center}
+.dialog-shell{min-width:0;padding:24px;border:1px solid #ffffff50;border-radius:24px;background:#11120fa6;backdrop-filter:blur(24px) saturate(130%);-webkit-backdrop-filter:blur(24px) saturate(130%);box-shadow:0 20px 60px #0003}
+.dialog-arrow{width:44px;height:44px;border:1px solid #ffffffa0;border-radius:50%;background:#11120fe0;display:grid;place-items:center}
+.dialog-arrow svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2}
+.dialog-arrow:hover{background:#ffffff24}.dialog-arrow:disabled{opacity:.35;cursor:default}
+.dialog-gallery{display:flex;gap:10px;list-style:none;margin:16px 0 0;padding:6px;overflow-x:auto;scroll-padding-inline:6px;scrollbar-width:thin;scrollbar-color:#ffffff70 transparent}
+.dialog-gallery li{flex:0 0 calc((100% - 40px)/5);min-width:0}.dialog-thumbnail{display:block;width:100%;height:auto;aspect-ratio:16/10;min-height:44px;max-height:80px;padding:0;border:2px solid #ffffff9c;border-radius:9px;background:#11120f;overflow:hidden;opacity:.8;transition:opacity 180ms,border-color 180ms}
+.dialog-thumbnail img{width:100%;height:100%;object-fit:cover}.dialog-thumbnail:hover{opacity:1}.dialog-thumbnail[aria-pressed=true]{border:3px solid var(--accent);opacity:1}
 .dialog-header{align-items:center;gap:16px;margin-bottom:20px}
-.dialog-header h2{font-size:clamp(24px,3vw,38px)}
+.dialog-header h2{font-size:clamp(22px,2.5vw,36px);overflow-wrap:anywhere}
 .dialog-close{width:44px;height:44px;flex:none;justify-content:center;padding:0;border:1px solid #ffffff30;border-radius:50%;background:#ffffff0a}
 .dialog-close:hover{background:#ffffff20}
-.photo-gallery img{max-height:48dvh;background:transparent;border-radius:14px}
-.video-frame{border-radius:14px;max-height:48dvh}
+.photo-gallery{max-height:calc(100dvh - 290px);overflow-y:auto}.photo-gallery img{max-height:calc(100dvh - 290px);background:transparent;border-radius:14px}
+.video-frame{display:block;width:100%;aspect-ratio:var(--media-ratio);border-radius:14px;max-height:none}
 .dialog-info{padding-top:20px;color:#f4f4f4}
+.dialog-info #dialog-description{max-height:88px;overflow-y:auto}
 .dialog-info:has(#dialog-description:empty){padding-top:0}
 @keyframes project-open{from{opacity:0;transform:translate(var(--open-x),var(--open-y)) scale(var(--open-scale))}to{opacity:1;transform:translate(0,0) scale(1)}}
 @keyframes project-backdrop{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:no-preference){dialog.is-opening{animation:project-open 440ms cubic-bezier(.16,1,.3,1)}dialog[open]::backdrop{animation:project-backdrop 300ms ease-out}}
 @media(prefers-reduced-motion:no-preference){dialog.is-closing::backdrop{animation:project-backdrop 280ms ease-in 120ms reverse both}}
-@media(max-width:600px){.hero .hero-description{bottom:28%;width:80%;max-width:none}.hero .hero-description p{font-size:clamp(27px,7.8vw,44px)}.about h2{font-size:7.4vw}.about-tagline{font-size:18px;margin-top:18px}.dialog-shell{padding:18px}.dialog-header{margin-bottom:16px}dialog{border-radius:20px}}
+@media(prefers-reduced-motion:no-preference){dialog{transition:width 260ms cubic-bezier(.16,1,.3,1)}}
+@media(max-width:600px){.hero .hero-description{bottom:28%;width:80%;max-width:none}.hero .hero-description p{font-size:clamp(27px,7.8vw,44px)}.about h2{font-size:7.4vw}.about-tagline{font-size:18px;margin-top:18px}dialog{--media-width:min(calc(100vw - 74px),calc((100dvh - 270px)*var(--media-ratio)));width:calc(var(--media-width) + 50px)}.dialog-stage{display:block}.dialog-shell{padding:18px;border-radius:20px}.dialog-header{margin-bottom:16px}.dialog-arrow{position:absolute;top:50%;z-index:1;transform:translateY(-50%)}.dialog-prev{left:-6px}.dialog-next{right:-6px}}
+@media(max-height:500px){dialog{--media-width:min(800px,calc(100vw - 176px),calc(48dvh*var(--media-ratio)))}.dialog-shell{padding:14px}.dialog-header{margin-bottom:10px}.dialog-header h2{font-size:20px}.dialog-info{padding-top:10px}.dialog-info #dialog-description{max-height:54px}.dialog-gallery{margin-top:8px}.dialog-thumbnail{height:46px}}
 @media(max-height:500px) and (min-width:601px){.hero .hero-description{bottom:37%}.hero .hero-description p{font-size:clamp(24px,3vw,40px)}}

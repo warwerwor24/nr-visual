@@ -1,5 +1,15 @@
 # Verification, 29 September 2026
 
+## Adaptive project popup and five-cover navigation, 1 October 2026
+
+- PASS: 9 Node tests and release build using published Sanity data. Missing video format preserves the existing 16:9 player.
+- PASS: Seven browser-only video fixtures at 1440×1000, 1260×884, 390×884, 320×700, and 844×390. Exact 16:9, 9:16, 1:1 and 4:5 ratios fit the screen; five covers appear at once and next advances the cover strip.
+- PASS: Next/previous wrapping, selected cover, thumbnail selection, keyboard arrows, Escape, player cleanup and focus return. Opening/closing and width transitions work with normal motion; reduced motion bypasses animation. No JavaScript errors.
+- PASS: All published projects are available from homepage and archive dialogs. Current live data has one project, so its arrows remain disabled until another is published.
+- PASS: Hosted Sanity schema includes Video format; CSS/JS return 200 with correct root paths after Studio deployment.
+- Design gate: Existing dark glass popup and brand palette retained; media takes priority, cover strip supports browsing, controls keep 44 px targets and visible keyboard focus. No new dependency or generated asset.
+- Google Drive playback inside the iframe is not part of fixture verification. Format follows the editor's selection because the parent website cannot inspect the embedded player's video dimensions.
+
 ## Live Vercel deployment and Sanity updates, 1 October 2026
 
 - PASS: 8 Node tests, including production with an empty real portfolio while preserving CMS, branding, canonical URL and media validation.

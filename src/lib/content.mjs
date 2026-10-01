@@ -1,7 +1,7 @@
 import { driveMedia, publishedProjects, socialUrl, whatsappUrl } from './media.mjs';
 import { demoContent } from '../data/demo.mjs';
 
-const project = `{_id,title,category,description,kind,driveUrl,client,role,completedAt,"cover":cover.asset->url,"alt":cover.alt,"photos":photos[]{"url":asset->url,alt}}`;
+const project = `{_id,title,category,description,kind,driveUrl,videoFormat,client,role,completedAt,"cover":cover.asset->url,"alt":cover.alt,"photos":photos[]{"url":asset->url,alt}}`;
 export const contentQuery = `*[_type == "siteSettings" && _id == "siteSettings"][0]{brandName,heroText,heroPortrait{"url":asset->url,alt},experienceYears,aboutText,whatsapp,instagram,linkedin,"logo":logo.asset->url,"clientLogos":clientLogos[]{"url":asset->url,alt,tone},"shareImage":shareImage.asset->url,"highlights":highlights[]->${project},"collage":collage[]->${project},"projects":*[_type == "project"] | order(coalesce(completedAt,_createdAt) desc,_id asc)${project}}`;
 
 export async function loadContent(env) {

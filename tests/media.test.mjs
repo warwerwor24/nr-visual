@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { driveMedia, publishedProjects, socialUrl, whatsappUrl } from '../src/lib/media.mjs';
+import { driveMedia, publishedProjects, socialUrl, whatsappUrl, videoAspectRatio } from '../src/lib/media.mjs';
 import { loadContent } from '../src/lib/content.mjs';
 
 test('Drive links are normalized and preserve restricted-link resource keys', () => {
@@ -14,6 +14,11 @@ test('Drive links are normalized and preserve restricted-link resource keys', ()
 test('only published, unique video projects can be selected as highlights', () => {
   const video = { _id: 'one', kind: 'video' };
   assert.deepEqual(publishedProjects([null, video, video, { _id: 'drafts.two', kind: 'video' }, { _id: 'versions.release.three', kind: 'video' }, { _id: 'photo', kind: 'photo' }], true), [video]);
+});
+
+test('video formats preserve exact ratios and existing projects default to landscape', () => {
+  for (const [format, ratio] of [['16:9', 16 / 9], ['9:16', 9 / 16], ['1:1', 1], ['4:5', .8]]) assert.equal(videoAspectRatio(format), ratio);
+  for (const format of [undefined, 'invalid', 'constructor', '__proto__']) assert.equal(videoAspectRatio(format), 16 / 9);
 });
 
 test('contact URLs cannot lead to arbitrary hosts or scripts', () => {

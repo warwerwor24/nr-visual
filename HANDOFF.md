@@ -2,6 +2,8 @@
 
 ## Status terbaru, 1 Oktober 2026
 
+- Popup terbaru: ukuran adaptif mengikuti `videoFormat` pada project (16:9 default, 9:16, 1:1, 4:5). Arrow/keyboard/cover menavigasi semua project terpublikasi; maksimal 5 cover terlihat sekaligus, bergeser saat next. Studio online sudah menerima field baru. Pemeriksaan lokal `scripts/check-project-dialog.mjs` lulus di 5 viewport dan kedua preferensi motion, tanpa menulis fixture ke CMS.
+
 - Website: https://nr-visual.vercel.app/, hosting Vercel menggantikan tujuan Netlify pada snapshot lama di bawah.
 - Repository privat: https://github.com/warwerwor24/nr-visual, branch `main`; push memicu deploy bawaan Vercel.
 - Sanity project `n4rtv48x`, dataset `production`; editor https://nr-visual-n4rtv48x.sanity.studio/. `/admin` dan `/admin/` di website mengarahkan ke editor tersebut.
