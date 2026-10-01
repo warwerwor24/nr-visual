@@ -1,5 +1,15 @@
 # Verification, 29 September 2026
 
+## Live Vercel deployment and Sanity updates, 1 October 2026
+
+- PASS: 8 Node tests, including production with an empty real portfolio while preserving CMS, branding, canonical URL and media validation.
+- PASS: Vercel production build with Node 24 and real Sanity data; https://nr-visual.vercel.app/ returns 200 without visitor authentication. Canonical URL matches the public domain.
+- PASS: `/admin` and `/admin/` redirect to the hosted Sanity editor; Studio is not duplicated in the Vercel build.
+- PASS: Browser checks at 1260 and 390 px: one featured project, one archive project, eight decoded client logos, no horizontal overflow, no JavaScript errors. Screenshots saved under ignored `work/live-*.png`.
+- PASS: Private GitHub repository connected to Vercel. Sanity webhook enabled for published project/settings create/update/delete, drafts and versions excluded.
+- PASS: Saving the existing brand name unchanged refreshed its revision, webhook returned 201 without failure, and deployment `dpl_HZ4jf8ZG7jX91uGkQcTW9tuguDef` completed READY from hook `Sanity` on `main`. Content text was preserved.
+- NOT CHECKED: Actual Google Drive playback permissions on the user's video. The deployment and archive checks do not establish whether Drive permits playback for an anonymous visitor.
+
 ## Full-height WORK side panel, 30 September 2026
 
 - PASS: Left panel matches the project-grid height; WORK is centered horizontally and vertically, with existing rotation retained. Geometry checks pass at seven widths from 320 to 1440 px, including seamless hero/collection joins and adjacent cards.

@@ -4,14 +4,15 @@ Website portofolio Astro dengan landing page, arsip `/projects/`, dan Sanity Stu
 
 ## Status saat diserahkan
 
-- Sanity terhubung ke project `n4rtv48x`, dataset public `production`. Logo, sampul, kontak, dan delapan logo klien sudah tersimpan sebagai Website settings terpublikasi. Dataset proyek masih kosong; proyek contoh tidak diimpor.
+- Sanity terhubung ke project `n4rtv48x`, dataset public `production`. Logo, sampul, kontak, dan delapan logo klien sudah tersimpan sebagai Website settings terpublikasi. Saat verifikasi 1 Oktober 2026, satu project asli terpublikasi dan featured; proyek contoh tidak diimpor.
 - Popup, galeri foto, layout responsif, skema admin, pembacaan konten terpublikasi, dan konfigurasi Vercel sudah diimplementasikan.
-- Login Google dan izin CORS admin lokal sudah aktif. Admin online sudah terdeploy di `https://nr-visual-n4rtv48x.sanity.studio/`; Studio lokal juga tersedia di `http://127.0.0.1:3333/admin/`. Video Drive pribadi, webhook, domain, dan deployment website utama belum tersambung.
+- Website online: https://nr-visual.vercel.app/. Repository privat: https://github.com/warwerwor24/nr-visual. Admin online: https://nr-visual-n4rtv48x.sanity.studio/. Login Google dan izin CORS admin lokal sudah aktif. Studio lokal tersedia di `http://127.0.0.1:3333/admin/`.
+- Webhook **NR Visual → Vercel** sudah aktif untuk create/update/delete dokumen project dan Website settings terpublikasi. Draft dan versions tidak memicu deploy. Tes nyata menerima respons 201 dan menghasilkan deployment produksi READY. URL hook dirahasiakan dari repository/frontend.
 - Build produksi gagal bila koneksi CMS, identitas, kontak, gambar berbagi, atau alamat HTTPS belum lengkap. Portofolio kosong boleh dipublikasikan dengan tampilan kosong; proyek contoh tidak dipakai saat Sanity terhubung.
 
 ## Jalankan di komputer
 
-Gunakan Node.js 22.12+ LTS atau 24 LTS dan npm. Versi dependensi terkunci di `package-lock.json`.
+Gunakan Node.js 24 LTS dan npm. Versi major dikunci ke 24 agar deploy tidak otomatis berpindah ke major baru; dependensi terkunci di `package-lock.json`.
 
 ```sh
 npm ci
@@ -78,7 +79,7 @@ _type in ["project", "siteSettings"] && !(_id in path("drafts.**")) && !(_id in 
 6. Publish, reorder, atau unpublish karya; periksa riwayat webhook dan deploy. Perubahan tampil setelah build berhasil, tidak seketika. Bila webhook gagal, ulangi pengiriman melalui Sanity atau mulai redeploy manual di Vercel.
 7. Hubungkan domain dan tunggu HTTPS aktif. Perbarui `SITE_URL` bila domain berubah. Login admin tetap melalui domain Sanity yang sudah terdaftar.
 
-Build menghentikan proses bila API CMS gagal; tidak mengganti data asli dengan contoh. Vercel mempertahankan deployment sukses terakhir sampai build berikutnya berhasil. Untuk rollback, gunakan deployment sukses sebelumnya di Vercel. Koneksi akun dan webhook live masih perlu diselesaikan.
+Build menghentikan proses bila API CMS gagal; tidak mengganti data asli dengan contoh. Vercel mempertahankan deployment sukses terakhir sampai build berikutnya berhasil. Untuk rollback, gunakan deployment sukses sebelumnya di Vercel. Koneksi akun, repository, dan webhook live sudah diuji pada 1 Oktober 2026.
 
 ## Sebelum peluncuran
 

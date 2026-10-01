@@ -1,5 +1,16 @@
 # Mulai di sini: handoff NR Visual
 
+## Status terbaru, 1 Oktober 2026
+
+- Website: https://nr-visual.vercel.app/, hosting Vercel menggantikan tujuan Netlify pada snapshot lama di bawah.
+- Repository privat: https://github.com/warwerwor24/nr-visual, branch `main`; push memicu deploy bawaan Vercel.
+- Sanity project `n4rtv48x`, dataset `production`; editor https://nr-visual-n4rtv48x.sanity.studio/. `/admin` dan `/admin/` di website mengarahkan ke editor tersebut.
+- Webhook `NR Visual → Vercel` hanya membaca perubahan terpublikasi pada `project` dan `siteSettings`, create/update/delete; draft dan versions off. Pengiriman nyata merespons 201 dan deployment baru READY.
+- Satu project asli sudah terpublikasi dan featured saat verifikasi. Portfolio boleh kosong; build tetap menolak koneksi CMS gagal, identitas tidak lengkap, atau URL produksi tidak valid. Tidak ada fallback demo pada produksi.
+- Build Vercel memakai `npm run build:release`, Astro statis, Node 24 LTS, domain canonical otomatis dari Vercel. Studio tidak dibangun ulang di Vercel; schema admin online diperbarui dengan `npm run studio:deploy`.
+- 8 tes Node lulus; website live di 1260 dan 390 px memuat 8 logo, featured dan arsip sesuai CMS, tanpa overflow/error JavaScript. Lihat README untuk alur input dan deploy terbaru.
+- `.env`, `.env.local`, `.vercel`, `work`, dan URL hook tidak dimasukkan ke Git. `work` berisi alat/pemeriksaan lokal yang tidak dibutuhkan deployment.
+
 Snapshot: 29 September 2026. Proyek ini dipindahkan ke akun GPT/Codex lain. Lanjutkan implementasi yang ada, jangan membangun ulang dari nol.
 
 ## Tujuan dan keputusan yang sudah disetujui
