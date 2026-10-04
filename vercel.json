@@ -5,6 +5,16 @@
   "outputDirectory": "dist",
   "redirects": [
     {
+      "source": "/links",
+      "destination": "/findmehere",
+      "permanent": true
+    },
+    {
+      "source": "/links/",
+      "destination": "/findmehere",
+      "permanent": true
+    },
+    {
       "source": "/admin/",
       "destination": "https://nr-visual-n4rtv48x.sanity.studio/",
       "permanent": false

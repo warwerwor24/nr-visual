@@ -1,0 +1,77 @@
+---
+import '../../styles/site.css';
+import '../../styles/links.css';
+import { loadContent } from '../../lib/content.mjs';
+import CoverImage from '../../components/CoverImage.astro';
+import ProjectDialog from '../../components/ProjectDialog.astro';
+
+const { demo, settings, highlights } = await loadContent({ ...import.meta.env, ...process.env });
+const logo = settings.logo || '/nrvisual-logo-transparent.png';
+const email = 'nouvalrla@gmail.com';
+const links = [
+  { label: 'WhatsApp', href: settings.whatsapp || 'https://wa.me/628176383770', detail: "Let's talk about your vision", primary: true },
+  { label: 'Website', href: '/', detail: 'Slide in for more of my works', website: true },
+  { label: 'Instagram', href: settings.instagram || 'https://www.instagram.com/ivalrz/', detail: '@ivalrz' },
+  { label: 'LinkedIn', href: settings.linkedin || 'https://www.linkedin.com/in/nouvalrla/', detail: 'Get to know my career' },
+  { label: 'Email', href: `mailto:${email}`, detail: email },
+];
+const description = `Featured projects and contact links for ${settings.brandName}.`;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Links | {settings.brandName}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#11120f" />
+    {demo && <meta name="robots" content="noindex,nofollow" />}
+    {Astro.site && <link rel="canonical" href={new URL('/findmehere', Astro.site)} />}
+    <meta property="og:title" content={`Links | ${settings.brandName}`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    {Astro.site && <meta property="og:url" content={new URL('/findmehere', Astro.site)} />}
+    {settings.shareImage && <meta property="og:image" content={settings.shareImage} />}
+    <link rel="icon" type="image/png" href="/nr-favicon.png" />
+  </head>
+  <body class="links-body">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <main id="main" class="links-page">
+      <header class="links-intro">
+        <h1><img src={logo} alt={settings.brandName} width="1636" height="310" fetchpriority="high" /></h1>
+        <p>{settings.heroText}</p>
+      </header>
+
+      <section class="links-featured" aria-labelledby="featured-title">
+        <div class="links-featured-heading">
+          <h2 id="featured-title">Featured projects</h2>
+          {highlights.length > 1 && <span class="links-count" aria-live="polite" aria-atomic="true" data-carousel-count>1 / {highlights.length}</span>}
+        </div>
+        {highlights.length > 0 ? <div class="links-carousel-frame"><ul class:list={['links-carousel', { 'links-carousel-single': highlights.length === 1 }]} aria-label="Featured projects">
+          {highlights.map((project, index) => <li>
+            <button class="links-project" data-project={project._id} aria-label={`${project.kind === 'video' ? 'Watch' : 'Open'} ${project.title}${demo ? ', sample project' : ''}`}>
+              <span class="links-project-cover"><CoverImage project={project} loading={index === 0 ? 'eager' : 'lazy'} /></span>
+              <span class="links-project-copy"><span class="links-project-title">{project.title}</span><span class="links-project-category">{demo ? 'Sample project' : project.category}</span></span>
+            </button>
+          </li>)}
+        </ul>
+        {highlights.length > 1 &&
+          <div class="links-carousel-controls" hidden>
+            <button type="button" data-carousel-prev aria-label="Previous featured project" disabled><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m14 6-6 6 6 6" /></svg></button>
+            <button type="button" data-carousel-next aria-label="Next featured project"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m10 6 6 6-6 6" /></svg></button>
+          </div>
+        }
+        </div> : <p class="links-empty">New projects are on the way. Visit the portfolio or get in touch below.</p>}
+      </section>
+
+      <nav class="links-destinations" aria-label="Portfolio and contact links">
+        {links.map(link => <a class:list={['links-destination', { 'links-destination-primary': link.primary, 'links-destination-website': link.website }]} href={link.href} target={link.href.startsWith('https:') ? '_blank' : undefined} rel={link.href.startsWith('https:') ? 'noopener noreferrer' : undefined}>
+          <span class="links-destination-label">{link.label}</span><span class="links-destination-detail">{link.detail}</span>
+        </a>)}
+      </nav>
+      <footer class="links-footer"><p>© {new Date().getFullYear()} {settings.brandName}</p></footer>
+    </main>
+    <ProjectDialog projects={highlights} />
+    <script src="../../scripts/links-carousel.ts"></script>
+  </body>
+</html>

@@ -7,6 +7,11 @@ const status = document.querySelector<HTMLElement>('#media-status')!;
 const templates = [...document.querySelectorAll<HTMLTemplateElement>('template[data-project-template]')];
 const thumbnails = [...dialog.querySelectorAll<HTMLButtonElement>('[data-dialog-project]')];
 const arrows = [...dialog.querySelectorAll<HTMLButtonElement>('.dialog-arrow')];
+const focusButton = dialog.querySelector<HTMLButtonElement>('.dialog-focus')!;
+const shell = dialog.querySelector<HTMLElement>('.dialog-shell')!;
+const focusExtras = [...dialog.querySelectorAll<HTMLElement>('.dialog-gallery, .dialog-info, .dialog-arrow')];
+let focusChanging = false;
+let focusAnimations: Animation[] = [];
 let activeIndex = 0;
 let trigger: HTMLButtonElement | null = null;
 let loadTimer: ReturnType<typeof setTimeout> | undefined;
@@ -31,6 +36,7 @@ function showProject(index: number, switching = false) {
   const template = templates[index];
   const ratio = Number(template.dataset.ratio);
   dialog.style.setProperty('--media-ratio', String(Number.isFinite(ratio) && ratio > 0 ? ratio : 16 / 9));
+  media.classList.toggle('has-video', Boolean(template.dataset.embed));
   title.textContent = template.dataset.title || '';
   description.textContent = template.dataset.description || '';
   arrows.forEach(button => { button.disabled = templates.length < 2; });
@@ -61,6 +67,7 @@ function showProject(index: number, switching = false) {
       contentAnimations = contentItems.map(element => element.animate([
         { opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'translateY(0)' },
       ], { duration: 220, easing: 'ease-out', fill: 'both' }));
+      contentAnimations.forEach(animation => animation.finished.then(() => animation.cancel()).catch(() => {}));
     }
   }
 }
@@ -84,6 +91,7 @@ document.querySelectorAll<HTMLButtonElement>('button[data-project]').forEach(but
         { opacity: 0, transform: 'translateY(10px)' },
         { opacity: 1, transform: 'translateY(0)' },
       ], { duration: 220, delay: 440 + index * 60, easing: 'cubic-bezier(.16, 1, .3, 1)', fill: 'both' }));
+      contentAnimations.forEach(animation => animation.finished.then(() => animation.cancel()).catch(() => {}));
     }
   });
 });
@@ -98,9 +106,9 @@ thumbnails.forEach((button, index) => button.addEventListener('click', () => {
   if (index !== activeIndex && !dialog.classList.contains('is-closing')) showProject(index, true);
 }));
 dialog.addEventListener('keydown', event => {
-  if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+  if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key) && !(event.target instanceof Element && event.target.closest('.dialog-info'))) {
     event.preventDefault();
-    navigate(event.key === 'ArrowLeft' ? -1 : 1);
+    navigate(event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 1);
   }
 });
 dialog.addEventListener('transitionend', event => {
@@ -117,6 +125,7 @@ function clearMedia() {
 }
 async function closeProject() {
   if (!dialog.open || dialog.classList.contains('is-closing')) return;
+  focusAnimations.forEach(animation => animation.cancel());
   const current = getComputedStyle(panelContent);
   const from = { transform: current.transform, opacity: current.opacity };
   dialog.classList.remove('is-opening');
@@ -142,6 +151,46 @@ async function closeProject() {
   }
 }
 document.querySelector('.dialog-close')!.addEventListener('click', closeProject);
+focusButton.addEventListener('click', async () => {
+  const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (focusChanging || dialog.classList.contains('is-closing') || (motion && dialog.classList.contains('is-opening'))) return;
+  focusChanging = true;
+  dialog.classList.add('is-focus-changing');
+  const focused = !dialog.classList.contains('is-focused');
+  const visibleExtras = focusExtras.filter(element => element.getClientRects().length);
+  const before = shell.getBoundingClientRect();
+  try {
+    if (motion && focused) {
+      focusAnimations = visibleExtras.map(element => element.animate([
+        { opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(6px)' },
+      ], { duration: 140, easing: 'ease-in', fill: 'forwards' }));
+      await Promise.all(focusAnimations.map(animation => animation.finished.catch(() => {})));
+      if (!dialog.open || dialog.classList.contains('is-closing')) return;
+    }
+    dialog.classList.toggle('is-focused', focused);
+    focusButton.setAttribute('aria-pressed', String(focused));
+    focusButton.setAttribute('aria-label', focused ? 'Exit focus mode' : 'Enter focus mode');
+    focusButton.title = focused ? 'Exit focus mode' : 'Focus mode';
+    if (motion) {
+      const after = shell.getBoundingClientRect();
+      const transform = `translate(${before.left - after.left}px, ${before.top - after.top}px) scale(${before.width / after.width}, ${before.height / after.height})`;
+      focusAnimations.push(shell.animate([
+        { transform, transformOrigin: 'top left' }, { transform: 'none', transformOrigin: 'top left' },
+      ], { duration: 320, easing: 'cubic-bezier(.16, 1, .3, 1)', fill: 'both' }));
+      if (!focused) {
+        focusAnimations.push(...focusExtras.filter(element => element.getClientRects().length).map(element => element.animate([
+          { opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'translateY(0)' },
+        ], { duration: 220, delay: 100, easing: 'cubic-bezier(.16, 1, .3, 1)', fill: 'both' })));
+      }
+      await Promise.all(focusAnimations.map(animation => animation.finished.catch(() => {})));
+    }
+  } finally {
+    focusAnimations.forEach(animation => animation.cancel());
+    focusAnimations = [];
+    dialog.classList.remove('is-focus-changing');
+    focusChanging = false;
+  }
+});
 dialog.addEventListener('animationend', event => {
   if (event.target === panelContent) dialog.classList.remove('is-opening');
 });
@@ -152,6 +201,10 @@ dialog.addEventListener('click', event => { if (startedOutside && event.target =
 dialog.addEventListener('close', () => {
   if (dialog.open) return;
   dialog.classList.remove('is-opening', 'is-closing');
+  dialog.classList.remove('is-focused');
+  focusButton.setAttribute('aria-pressed', 'false');
+  focusButton.setAttribute('aria-label', 'Enter focus mode');
+  focusButton.title = 'Focus mode';
   clearMedia();
   trigger?.focus({ preventScroll: true });
 });

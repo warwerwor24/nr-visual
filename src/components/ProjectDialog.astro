@@ -4,18 +4,26 @@ import CoverImage from './CoverImage.astro';
 const { projects } = Astro.props;
 ---
 <dialog id="project-dialog" aria-labelledby="dialog-title">
+  <button class="dialog-focus" aria-label="Enter focus mode" aria-pressed="false" title="Focus mode"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg></button>
+  <button class="dialog-close" aria-label="Close project" autofocus><span aria-hidden="true">×</span></button>
   <div class="dialog-content">
   <div class="dialog-stage">
-    <button class="dialog-arrow dialog-prev" aria-label="Previous project"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6" /></svg></button>
-    <div class="dialog-shell"><header class="dialog-header"><h2 id="dialog-title"></h2><button class="dialog-close" aria-label="Close project" autofocus><span aria-hidden="true">×</span></button></header>
-    <div id="dialog-media"></div><div class="dialog-info"><p id="dialog-description"></p><p id="media-status" class="visually-hidden" role="status"></p></div>
+    <div class="dialog-shell"><header class="dialog-header"><h2 id="dialog-title"></h2></header>
+    <div id="dialog-media"></div>
     </div>
-    <button class="dialog-arrow dialog-next" aria-label="Next project"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6" /></svg></button>
+    <section class="dialog-info" aria-labelledby="description-title"><h3 id="description-title">Description</h3><p id="dialog-description"></p><p id="media-status" class="visually-hidden" role="status"></p></section>
   </div>
+  <div class="dialog-navigation">
+    <div class="dialog-arrows">
+      <button class="dialog-arrow dialog-prev" aria-label="Previous project"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 14 6-6 6 6" /></svg></button>
+      <button class="dialog-arrow dialog-next" aria-label="Next project"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 10 6 6 6-6" /></svg></button>
+    </div>
   <ul class="dialog-gallery" aria-label="Browse projects">{projects.map(project => <li><button class="dialog-thumbnail" data-dialog-project={project._id} aria-label={`Open ${project.title}`} aria-pressed="false"><CoverImage project={project} alt="" width={160} height={100} /><span class="visually-hidden">{project.title}</span></button></li>)}</ul>
+  </div>
   </div>
 </dialog>
 <div hidden id="project-templates">{projects.map(project => <template data-project-template={project._id} data-title={project.title} data-description={project.description || ''} data-ratio={videoAspectRatio(project.videoFormat)} data-embed={project.kind === 'video' ? driveMedia(project.driveUrl)?.embed || '' : ''}>
   {(!driveMedia(project.driveUrl) || project.kind === 'photo') && <div class="photo-gallery">{(project.kind === 'photo' ? project.photos : [{ url: project.cover, alt: project.alt }]).filter(photo => photo?.url).map(photo => <figure><img src={photo.url} alt={photo.alt} width="1400" height="900" loading="lazy" /></figure>)}</div>}
 </template>)}</div>
 <script src="../scripts/dialog.ts"></script>
+<script src="../scripts/fit-project-titles.ts"></script>

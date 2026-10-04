@@ -53,24 +53,38 @@ try {
       assert.equal(await page.locator('#dialog-title').innerText(), `Project ${index + 1}`);
       assert.equal(await page.locator('#dialog-media iframe').count(), 1);
       const frame = await page.locator('.video-frame').boundingBox();
-      assert(Math.abs(frame.width / frame.height - ratios[index]) < .02, `Wrong ratio ${index} at ${width}`);
+      const heightLimit = await page.locator('#dialog-media').evaluate(element => parseFloat(getComputedStyle(element).maxHeight));
+      assert(Math.abs(frame.height - Math.min(frame.width / ratios[index], heightLimit)) < 1, `Wrong fitted player height ${index} at ${width}`);
+      assert(frame.width >= Math.min(252, width - 58, heightLimit * ratios[index]) - 1, `Player too narrow ${index} at ${width}`);
+      assert(await page.locator('.video-frame').evaluate(element => {
+        const frame = element.getBoundingClientRect();
+        const container = element.parentElement.getBoundingClientRect();
+        return Math.abs(frame.width - container.width) < 1 && Math.abs(frame.height - container.height) < 1;
+      }), `Iframe does not fill its container ${index} at ${width}`);
       const panel = await page.locator('.dialog-shell').boundingBox();
       assert(panel.x >= 0 && panel.x + panel.width <= width, `Panel outside ${width}`);
       assert(frame.height > 0 && frame.y >= 0 && frame.y + frame.height <= height, `Video outside ${width}`);
+      if (width <= 600) {
+        for (const arrow of await page.locator('.dialog-arrow').all()) {
+          const box = await arrow.boundingBox();
+          assert(box.y >= frame.y + frame.height, `Navigation covers player ${index} at ${width}`);
+          assert(box.width >= 44 && box.height >= 44, 'Navigation target too small');
+        }
+      }
       assert.equal(await page.locator('.dialog-thumbnail[aria-pressed=true]').count(), 1);
       assert(await page.locator('.dialog-thumbnail[aria-pressed=true]').evaluate(button => {
         const item = button.getBoundingClientRect();
         const gallery = button.closest('.dialog-gallery').getBoundingClientRect();
-        return item.left >= gallery.left - 1 && item.right <= gallery.right + 1;
+        return item.left >= gallery.left - 1 && item.right <= gallery.right + 1 && item.top >= gallery.top - 1 && item.bottom <= gallery.bottom + 1;
       }), `Active cover clipped at ${width}`);
-      if (index === 1) assert(await page.locator('.dialog-gallery').evaluate(gallery => gallery.scrollLeft > 0), `Gallery did not advance at ${width}`);
+      if (index === 1 && width <= 900) assert(await page.locator('.dialog-gallery').evaluate(gallery => gallery.scrollWidth <= gallery.clientWidth || gallery.scrollLeft > 0), `Scrollable gallery did not advance at ${width}`);
       if (index === 0) {
         const visible = await page.locator('.dialog-gallery').evaluate(gallery => [...gallery.children].filter(child => {
           const item = child.getBoundingClientRect();
           const area = gallery.getBoundingClientRect();
-          return item.left >= area.left - 1 && item.right <= area.right + 1;
+          return item.left >= area.left - 1 && item.right <= area.right + 1 && item.top >= area.top - 1 && item.bottom <= area.bottom + 1;
         }).length);
-        assert.equal(visible, 5, `Expected five covers at ${width}`);
+        assert(visible >= 2 && visible <= ratios.length, `Responsive navigation must show the active cover and an adjacent cover at ${width}`);
       }
       if (index === 1 && width !== 844) await page.screenshot({ path: `work/dialog-check/portrait-${width}.png` });
     }
@@ -92,15 +106,17 @@ try {
     assert.equal(await page.locator('dialog[open]').count(), 0);
     assert.equal(await page.locator('#dialog-media iframe').count(), 0);
     assert(await card.evaluate(button => button === document.activeElement));
-    console.log(`PASS: ratios, five covers, navigation, screen-edge scrolling, keyboard and cleanup at ${width}×${height}`);
+    console.log(`PASS: fitted player, responsive cover navigation, screen-edge scrolling, keyboard and cleanup at ${width}×${height}`);
   }
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.setViewportSize({ width: 1260, height: 884 });
   await page.goto(`${base}/projects/`, { waitUntil: 'domcontentloaded' });
   await page.locator('.work-card').first().click();
   await page.waitForTimeout(800);
+  assert.equal(await page.locator('#dialog-media').evaluate(element => getComputedStyle(element).transform), 'none', 'Player keeps a transform after opening');
   await page.locator('.dialog-next').click();
   await page.waitForTimeout(350);
+  assert.equal(await page.locator('#dialog-media').evaluate(element => getComputedStyle(element).transform), 'none', 'Player keeps a transform after switching');
   assert(await page.locator('.dialog-thumbnail[aria-pressed=true]').evaluate(button => {
     const item = button.getBoundingClientRect();
     const gallery = button.closest('.dialog-gallery').getBoundingClientRect();
@@ -108,6 +124,11 @@ try {
   }), 'Active cover clipped after animated resize');
   await page.locator('.dialog-close').click();
   await page.waitForFunction(() => !document.querySelector('dialog').open);
+  await page.locator('.work-card').first().click();
+  await page.waitForTimeout(50);
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.querySelector('dialog').open);
+  assert.equal(await page.locator('.video-frame').count(), 0, 'Fast close keeps a player alive');
   await page.locator('.work-card').first().click();
   await page.waitForTimeout(800);
   await page.locator('dialog').click({position: {x: 10, y: 10}});

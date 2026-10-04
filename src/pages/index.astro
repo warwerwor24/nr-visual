@@ -82,7 +82,7 @@ const services = [
           <div class="collage-grid">
             {collage.map((project, index) => <button class={`collage-card position-${index % 15}`} data-project={project._id} aria-label={`Open ${project.title}${demo ? ', sample project' : ''}`}>
               <CoverImage project={project} variant="gallery" width={320} height={400} />
-              <span>{project.title}</span>
+              <span data-collage-title={project.title} title={project.title}>{project.title}</span>
             </button>)}
           </div>
         </div>

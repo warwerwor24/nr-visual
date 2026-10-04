@@ -2,6 +2,10 @@
 
 Website portofolio Astro dengan landing page, arsip `/projects/`, dan Sanity Studio. Hosting tujuan: Vercel; `/admin/` membuka editor Sanity yang sudah online. Video diputar dari Google Drive, foto disimpan di Sanity.
 
+Halaman `/findmehere` adalah link hub untuk bio sosial, dengan carousel yang mengikuti pilihan dan urutan **Featured videos** di Website settings. Alamat publik: https://nr-visual.vercel.app/findmehere. Vercel mengarahkan alamat lama `/links/` ke halaman ini. Urutan tombol: WhatsApp, Website (portfolio), Instagram, LinkedIn, dan email `nouvalrla@gmail.com`. Kontak sosial memakai data Website settings; alamat email berada di `src/pages/findmehere/index.astro`. Publish project/settings dan rebuild website untuk memperbarui kedua halaman. Sneak peek kartu berikutnya memudar transparan di tepi kanan. Satu featured project tampil tanpa kontrol geser; daftar kosong menampilkan pesan dan tetap menyediakan tombol kontak.
+
+Arrow slideshow berada di sisi kiri dan kanan, dengan sudut rounded tanpa border. Slideshow otomatis bergeser setiap 2 detik lalu mengulang dari awal. Tombol Pause/Play dihapus sesuai revisi pemilik. Autoplay berhenti sementara saat hover, sentuhan, fokus keyboard di slideshow, popup terbuka, atau tab tidak terlihat; pengaturan reduced motion menonaktifkan autoplay.
+
 ## Status saat diserahkan
 
 - Sanity terhubung ke project `n4rtv48x`, dataset public `production`. Logo, sampul, kontak, dan delapan logo klien sudah tersimpan sebagai Website settings terpublikasi. Saat verifikasi 1 Oktober 2026, satu project asli terpublikasi dan featured; proyek contoh tidak diimpor.
@@ -67,7 +71,7 @@ Deploy admin online memakai base path `/` karena Sanity hosting melayani file da
 ## Popup project dan format video
 
 - Di **Projects → Video format**, pilih Landscape 16:9, Portrait 9:16, Square 1:1, atau Portrait 4:5, lalu **Publish**. Video Google Drive menggunakan format pilihan ini; proyek lama tanpa pilihan memakai 16:9.
-- Popup lebih besar dan menyesuaikan format video serta ruang layar. Arrow kiri/kanan, tombol keyboard kiri/kanan, dan cover di bawah dapat membuka semua project terpublikasi, termasuk yang tidak featured. Deretan menampilkan hingga 5 cover; next menggesernya satu cover hingga mencapai akhir, lalu navigasi kembali ke awal.
+- Popup menyesuaikan format video serta ruang layar. Desktop menampilkan cover di sisi kiri, player di tengah, dan deskripsi serta arrow atas/bawah di kanan. HP menampilkan satu baris navigasi cover yang bisa digeser. Arrow, tombol keyboard, dan cover dapat membuka semua project terpublikasi, termasuk yang tidak featured. Focus mode memperbesar player dan menyembunyikan navigasi/deskripsi sementara; tombol yang sama mengembalikan layout.
 - Saat berpindah, player sebelumnya dilepas agar tidak terus memutar. Escape/tombol × menutup dengan animasi dan mengembalikan fokus ke cover asal. Reduced motion tetap didukung.
 - Pemeriksaan browser: `node scripts/check-project-dialog.mjs` dengan preview di port 4322 dan Playwright tersedia melalui `PLAYWRIGHT_MODULE`. Tujuh project uji hanya disisipkan ke respons browser lokal; tidak dibuat di Sanity atau website publik.
 

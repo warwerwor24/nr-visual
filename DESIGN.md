@@ -21,3 +21,17 @@ Reading this as a personal photo/film portfolio for varied clients, in an editor
 - Sample imagery is labeled in the preview and expanded views. No client, award, or testimonial claims are invented.
 - Eight owner-selected brand logos replace the dummy names above experience. KlikFilm is excluded; Kokola and London Taxi are separate. Source provenance is recorded privately in work/client-logo-sources.md. BBYU uses the original video end card, framed in CSS. Colors and proportions remain intact. The CMS logo list still supports replacement and reordering.
 - Logo rows use four columns above 1000px and two below. Native backgrounds retain each logo's contrast. Padded source assets are framed with CSS to balance visible size. A square transparent nr-only PNG supplies the favicon, while the full wordmark stays on the page.
+
+## Links page
+
+Owner-approved direction: an additional `/findmehere` page for phone visitors, with WhatsApp first, Website, Instagram, LinkedIn and Email (`nouvalrla@gmail.com`) last, plus several swipeable featured projects taken from the portfolio. The former `/links/` address redirects to this page on Vercel.
+
+Reading this as a mobile contact and project hub for NR Visual visitors, in the existing editorial photo/film style. ENERGY 3 / RHYTHM 2 / MOTION 2.
+
+- The existing wordmark, Manrope and black background maintain the portfolio identity; yellow distinguishes WhatsApp as the direct inquiry action and the owner's requested blue with black text highlights Website as the route to more work.
+- A centered column capped at 480px preserves comfortable thumb-sized controls and readable text on phones and larger screens. Content determines page height, with safe-area padding for device cutouts.
+- Featured projects reuse Sanity's homepage selection and order, and the existing cover crop and project popup. A rebuild updates both pages from one source.
+- Native horizontal scroll snapping exposes part of the next card to communicate swiping. A transparent mask fades only the 28px peek at the right edge, using the same token as the card-width reservation across screen sizes. The mask clears at the end of the list, for a single card, and during visible keyboard focus to preserve the final card and focus indicators. The owner removed the swipe hint; direction controls now flank the slideshow, with no circular border. Small dark backings with owner-requested rounded 12px corners keep white chevrons readable over bright photographs. Labeled previous/next buttons offer a keyboard and desktop alternative, while the counter indicates the current project. No carousel dependency is needed.
+- Owner-requested autoplay advances every 2 seconds and wraps from the final project to the first. The owner subsequently requested removal of the Pause/Play control. Hover, pointer contact, keyboard focus inside the slideshow, an open project dialog or a hidden page still pause the timer. Reduced-motion preferences disable autoplay and use instant manual movement. Automatic counter updates do not trigger live screen-reader announcements.
+- Project titles sit on a solid surface below each cover so image brightness cannot reduce text contrast. Project cards and link buttons use different corner radii to distinguish browsing from navigation.
+- Links use their real portfolio/contact destinations, including the owner's supplied email. External social/contact URLs open separately; project media loads only after selection. Empty projects retain contact access, and the existing media loading/error handling is reused.
