@@ -1,0 +1,8 @@
+---
+import { coverPresentation } from '../lib/cover.mjs';
+const { project, variant = 'work', width = 720, height = 450, loading = 'lazy' } = Astro.props;
+const gallery = variant === 'gallery' && project.galleryCover?.asset?._ref && project.galleryCover.url ? project.galleryCover : null;
+const alt = Astro.props.alt ?? gallery?.alt ?? project.alt;
+const cover = coverPresentation(project, Math.max(width, 900), variant);
+---
+<img src={cover.src} alt={alt} width={width} height={height} loading={loading} decoding="async" style={`object-position:${cover.position}`} />

@@ -1,8 +1,10 @@
 ---
 import { driveMedia, videoAspectRatio } from '../lib/media.mjs';
+import CoverImage from './CoverImage.astro';
 const { projects } = Astro.props;
 ---
 <dialog id="project-dialog" aria-labelledby="dialog-title">
+  <div class="dialog-content">
   <div class="dialog-stage">
     <button class="dialog-arrow dialog-prev" aria-label="Previous project"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6" /></svg></button>
     <div class="dialog-shell"><header class="dialog-header"><h2 id="dialog-title"></h2><button class="dialog-close" aria-label="Close project" autofocus><span aria-hidden="true">×</span></button></header>
@@ -10,7 +12,8 @@ const { projects } = Astro.props;
     </div>
     <button class="dialog-arrow dialog-next" aria-label="Next project"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6" /></svg></button>
   </div>
-  <ul class="dialog-gallery" aria-label="Browse projects">{projects.map(project => <li><button class="dialog-thumbnail" data-dialog-project={project._id} aria-label={`Open ${project.title}`} aria-pressed="false"><img src={project.cover} alt="" width="160" height="100" loading="lazy" /><span class="visually-hidden">{project.title}</span></button></li>)}</ul>
+  <ul class="dialog-gallery" aria-label="Browse projects">{projects.map(project => <li><button class="dialog-thumbnail" data-dialog-project={project._id} aria-label={`Open ${project.title}`} aria-pressed="false"><CoverImage project={project} alt="" width={160} height={100} /><span class="visually-hidden">{project.title}</span></button></li>)}</ul>
+  </div>
 </dialog>
 <div hidden id="project-templates">{projects.map(project => <template data-project-template={project._id} data-title={project.title} data-description={project.description || ''} data-ratio={videoAspectRatio(project.videoFormat)} data-embed={project.kind === 'video' ? driveMedia(project.driveUrl)?.embed || '' : ''}>
   {(!driveMedia(project.driveUrl) || project.kind === 'photo') && <div class="photo-gallery">{(project.kind === 'photo' ? project.photos : [{ url: project.cover, alt: project.alt }]).filter(photo => photo?.url).map(photo => <figure><img src={photo.url} alt={photo.alt} width="1400" height="900" loading="lazy" /></figure>)}</div>}

@@ -73,12 +73,20 @@ Deploy admin online memakai base path `/` karena Sanity hosting melayani file da
 
 ## Pilih cover dari frame video
 
-1. Buka **Projects → project kamu → Cover**. Di bawah input gambar biasa, pilih **Video file** dari komputer. Gunakan file yang sama dengan video di Drive; MP4 H.264 disarankan jika browser tidak membaca codec lain.
+1. Buka **Projects → project kamu → WORK cover**. Di bawah input gambar biasa, pilih **Video file** dari komputer. Gunakan file yang sama dengan video di Drive; MP4 H.264 disarankan jika browser tidak membaca codec lain.
 2. Geser **Cover time** sampai frame yang diinginkan terlihat. Slider juga bisa digeser dengan tombol panah keyboard.
 3. Klik **Use this frame as cover**. Hanya gambar JPEG maksimal 1600 px pada sisi panjang yang diunggah ke Sanity; file video tetap di komputer dan playback tetap memakai link Drive.
 4. Periksa **Image description**, pilih **Video format** yang sesuai, lalu **Publish**. Menyimpan cover tidak otomatis mempublish project. Upload yang gagal mempertahankan cover sebelumnya.
 
-Cover di grid WORK tetap seragam, terlepas dari format video. Pilih frame dengan subjek dekat tengah atau upload cover landscape khusus agar crop kartu tidak memotong subjek penting. Format asli digunakan pada popup. Pemilihan frame langsung dari iframe Drive tidak tersedia pada alur ini.
+Cover di grid WORK tetap seragam, terlepas dari format video. Format asli digunakan pada popup. Pemilihan frame langsung dari iframe Drive tidak tersedia pada alur ini.
+
+### Crop WORK dan galeri secara terpisah
+
+1. Pada **WORK cover**, buka editor gambar bawaan Sanity. Atur batas Crop dan pusat Hotspot pada bagian penting (misalnya wajah). Preview WORK desktop/mobile membantu memilih posisi. Ini mengatur kartu WORK, arsip dan thumbnail popup.
+2. Pada **Gallery cover**, klik **Use WORK cover image** untuk memakai file yang sama tanpa upload ulang. Buka editor gambar di field ini dan atur Crop/Hotspot dengan preview **Yellow gallery (4:5)**. Pengaturan WORK tidak berubah. Mengklik tombol reuse lagi mengganti pilihan gambar dan mereset crop galeri.
+3. Periksa deskripsi gambar, lalu **Publish** project. Tunggu deployment otomatis berhasil dan refresh website.
+
+Gallery cover opsional: proyek lama atau field kosong tetap memakai WORK cover. Crop membatasi gambar melalui CDN Sanity; CSS mengikuti pusat Hotspot pada rasio kartu responsif. Hotspot yang sangat luas tetap perlu diperiksa pada layar berbeda. Mengganti frame WORK tidak otomatis mengganti gambar galeri yang sudah dipilih.
 
 Pemeriksaan terfokus: `node scripts/check-cover-input.mjs`. Tes memakai video lokal buatan browser dan upload tiruan; tidak membuat atau mengubah konten Sanity. Memeriksa validasi skema sebenarnya, seek/capture portrait, perubahan draft, gagal upload, codec tidak didukung, keyboard, mobile, foto dan akses read-only.
 

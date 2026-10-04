@@ -3,6 +3,7 @@ import '../styles/site.css';
 import { loadContent } from '../lib/content.mjs';
 import ProjectCard from '../components/ProjectCard.astro';
 import ProjectDialog from '../components/ProjectDialog.astro';
+import CoverImage from '../components/CoverImage.astro';
 const { demo, settings, highlights, collage, projects } = await loadContent({ ...import.meta.env, ...process.env });
 const logo = settings.logo || '/nrvisual-logo-transparent.png';
 const whatsapp = settings.whatsapp || 'https://wa.me/628176383770';
@@ -80,7 +81,7 @@ const services = [
           <h2 id="collection-title">MAKE EVERY<br />IDEA MATTER.</h2>
           <div class="collage-grid">
             {collage.map((project, index) => <button class={`collage-card position-${index % 15}`} data-project={project._id} aria-label={`Open ${project.title}${demo ? ', sample project' : ''}`}>
-              <img src={project.cover} alt={project.alt} width="320" height="400" loading="lazy" decoding="async" />
+              <CoverImage project={project} variant="gallery" width={320} height={400} />
               <span>{project.title}</span>
             </button>)}
           </div>

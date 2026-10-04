@@ -1,4 +1,5 @@
 const dialog = document.querySelector<HTMLDialogElement>('#project-dialog')!;
+const panelContent = dialog.querySelector<HTMLDivElement>('.dialog-content')!;
 const media = document.querySelector<HTMLDivElement>('#dialog-media')!;
 const title = document.querySelector<HTMLElement>('#dialog-title')!;
 const description = document.querySelector<HTMLElement>('#dialog-description')!;
@@ -73,7 +74,7 @@ document.querySelectorAll<HTMLButtonElement>('button[data-project]').forEach(but
     showProject(index);
     dialog.showModal();
     thumbnails[index]?.scrollIntoView({ block: 'nearest', inline: 'start', behavior: 'instant' });
-    const panel = dialog.getBoundingClientRect();
+    const panel = panelContent.getBoundingClientRect();
     dialog.style.setProperty('--open-x', `${card.left + card.width / 2 - panel.left - panel.width / 2}px`);
     dialog.style.setProperty('--open-y', `${card.top + card.height / 2 - panel.top - panel.height / 2}px`);
     dialog.style.setProperty('--open-scale', String(Math.min(.85, Math.max(.2, card.width / panel.width))));
@@ -103,7 +104,7 @@ dialog.addEventListener('keydown', event => {
   }
 });
 dialog.addEventListener('transitionend', event => {
-  if (event.target === dialog && event.propertyName === 'width' && dialog.open && !dialog.classList.contains('is-closing')) {
+  if (event.target === panelContent && event.propertyName === 'width' && dialog.open && !dialog.classList.contains('is-closing')) {
     thumbnails[activeIndex]?.scrollIntoView({ block: 'nearest', inline: 'start', behavior: 'instant' });
   }
 });
@@ -116,7 +117,7 @@ function clearMedia() {
 }
 async function closeProject() {
   if (!dialog.open || dialog.classList.contains('is-closing')) return;
-  const current = getComputedStyle(dialog);
+  const current = getComputedStyle(panelContent);
   const from = { transform: current.transform, opacity: current.opacity };
   dialog.classList.remove('is-opening');
   dialog.classList.add('is-closing');
@@ -129,7 +130,7 @@ async function closeProject() {
     contentAnimations = contentItems.map((element, index) => element.animate([
       contentFrom[index], { opacity: 0, transform: 'translateY(6px)' },
     ], { duration: 120, easing: 'ease-in', fill: 'forwards' }));
-    const animation = dialog.animate([
+    const animation = panelContent.animate([
       from,
       { transform: 'translate(var(--open-x), var(--open-y)) scale(var(--open-scale))', opacity: 0 },
     ], { duration: 280, delay: 120, easing: 'cubic-bezier(.4, 0, .8, .4)', fill: 'forwards' });
@@ -142,7 +143,7 @@ async function closeProject() {
 }
 document.querySelector('.dialog-close')!.addEventListener('click', closeProject);
 dialog.addEventListener('animationend', event => {
-  if (event.target === dialog) dialog.classList.remove('is-opening');
+  if (event.target === panelContent) dialog.classList.remove('is-opening');
 });
 dialog.addEventListener('cancel', event => { event.preventDefault(); closeProject(); });
 let startedOutside = false;

@@ -12,7 +12,7 @@ export const defineConfig = value => value;
 export const defineType = value => value;
 export const defineField = value => value;
 export const structureTool = () => ({});
-export const useFormValue = path => path[0] === 'kind' ? window.testKind : 'Cover test';
+export const useFormValue = path => path[0] === 'kind' ? window.testKind : path[0] === 'cover' ? window.workCover : 'Cover test';
 export const useClient = () => ({assets: {upload: async (type, blob) => {
   window.uploads = (window.uploads || 0) + 1;
   if (window.failUpload) throw new Error('Upload failed. Try again.');
@@ -31,6 +31,7 @@ import React from 'react';
 import {createRoot} from 'react-dom/client';
 import {ThemeProvider, studioTheme} from '@sanity/ui';
 import {VideoCoverInput} from '/sanity/VideoCoverInput.tsx';
+import {GalleryCoverInput} from '/sanity/GalleryCoverInput.tsx';
 window.testKind = 'video';
 const root = createRoot(document.getElementById('root'));
 window.renderInput = readOnly => root.render(<ThemeProvider theme={studioTheme}>
@@ -38,6 +39,10 @@ window.renderInput = readOnly => root.render(<ThemeProvider theme={studioTheme}>
     renderDefault={() => <p>Existing cover input</p>} onChange={patches => {window.patches = patches;}} />
 </ThemeProvider>);
 window.renderInput(false);
+window.renderGallery = readOnly => root.render(<ThemeProvider theme={studioTheme}>
+  <GalleryCoverInput readOnly={readOnly} renderDefault={() => <p>Gallery image editor</p>}
+    onChange={patch => {window.galleryPatch = patch;}} />
+</ThemeProvider>);
 `);
 const server = await createServer({
   configFile: false,
@@ -58,6 +63,11 @@ try {
   }
   assert.ok((await Promise.all(rules.map(rule => rule.validate('bad', context)))).flat().length > 0);
   console.log('PASS: Actual schema accepts all four formats and rejects invalid values.');
+  const fields = config.schema.types.find(type => type.name === 'project').fields;
+  assert.equal(fields.find(field => field.name === 'cover').options.hotspot.previews[0].aspectRatio, 1.6);
+  const galleryField = fields.find(field => field.name === 'galleryCover');
+  assert.equal(galleryField.options.hotspot.previews[0].aspectRatio, .8);
+  assert.deepEqual((await Promise.all(normalizeValidationRules({...galleryField, jsonType: 'object'}).map(rule => rule.validate(undefined, {...context, path: ['galleryCover'], type: {jsonType: 'object'}})))).flat(), [], 'Gallery override stays optional for existing projects');
   await server.listen();
   browser = await chromium.launch({ channel: 'msedge', headless: true });
   const page = await browser.newPage({ viewport: { width: 390, height: 884 } });
@@ -123,6 +133,17 @@ try {
   await page.evaluate(() => { window.testKind = 'photo'; window.renderInput(false); });
   await page.getByText('Existing cover input').waitFor();
   assert.equal(await page.getByLabel('Video file', { exact: true }).count(), 0);
+  await page.evaluate(() => {window.workCover = undefined; window.renderGallery(false);});
+  const reuse = page.getByRole('button', {name: 'Use WORK cover image'});
+  await reuse.waitFor();
+  assert(await reuse.isDisabled());
+  await page.evaluate(() => {window.workCover = {asset: {_type: 'reference', _ref: 'image-test-360x640-jpg'}, alt: 'Existing description', crop: {top: .3}, hotspot: {x: .5, y: .2}}; window.renderGallery(false);});
+  await reuse.click();
+  assert.deepEqual(await page.evaluate(() => window.galleryPatch), {type: 'set', path: [], value: {_type: 'image', asset: {_type: 'reference', _ref: 'image-test-360x640-jpg'}, alt: 'Existing description'}});
+  assert.equal(await page.evaluate(() => window.uploads), 2, 'Reusing WORK image must not upload another asset');
+  await page.evaluate(() => window.renderGallery(true));
+  await reuse.waitFor({state: 'detached'});
+  console.log('PASS: Separate gallery crop previews, optional legacy fallback, same asset reused without crop/hotspot inheritance or upload, read-only respected.');
   assert.deepEqual(errors, []);
   console.log('PASS: Local video seek, portrait frame capture, draft patches, preserved cover on upload failure, invalid codec state, keyboard slider, mobile, read-only and photography. Upload is mocked; no CMS content changed.');
 } finally {

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { driveMedia, publishedProjects, socialUrl, whatsappUrl, videoAspectRatio } from '../src/lib/media.mjs';
 import { loadContent } from '../src/lib/content.mjs';
+import { coverPresentation } from '../src/lib/cover.mjs';
 
 test('Drive links are normalized and preserve restricted-link resource keys', () => {
   const id = 'abcdefghijklmnop_123-456';
@@ -19,6 +20,26 @@ test('only published, unique video projects can be selected as highlights', () =
 test('video formats preserve exact ratios and existing projects default to landscape', () => {
   for (const [format, ratio] of [['16:9', 16 / 9], ['9:16', 9 / 16], ['1:1', 1], ['4:5', .8]]) assert.equal(videoAspectRatio(format), ratio);
   for (const format of [undefined, 'invalid', 'constructor', '__proto__']) assert.equal(videoAspectRatio(format), 16 / 9);
+});
+
+test('covers apply Sanity crop and keep the hotspot relative to the cropped image', () => {
+  const cover = 'https://cdn.sanity.io/images/n4rtv48x/production/3dcecfe6473ea785be50e922ee8dfbd923a5de79-900x1600.jpg';
+  const project = { cover, coverImage: { asset: { _ref: 'image-3dcecfe6473ea785be50e922ee8dfbd923a5de79-900x1600-jpg' }, crop: { left: 0, right: 0, top: .1, bottom: .1 }, hotspot: { x: .5, y: .2, width: .2, height: .2 } } };
+  const result = coverPresentation(project);
+  assert.equal(new URL(result.src).searchParams.get('rect'), '0,160,900,1280');
+  assert.equal(result.position, '50% 12.5%');
+  project.coverImage.hotspot.y = .01;
+  assert.equal(coverPresentation(project).position, '50% 0%');
+  delete project.coverImage.hotspot;
+  assert.equal(coverPresentation(project).position, '50% 50%');
+  assert.deepEqual(coverPresentation({ cover: '/cover.png' }), { src: '/cover.png', position: '50% 50%' });
+  project.coverImage.hotspot = {x: .5, y: .2};
+  project.galleryCover = { ...project.coverImage, url: cover, crop: {left: 0, right: 0, top: 0, bottom: .25}, hotspot: {x: .5, y: .6} };
+  assert.equal(coverPresentation(project, 900, 'gallery').position, '50% 80%');
+  assert.equal(new URL(coverPresentation(project, 900, 'gallery').src).searchParams.get('rect'), '0,0,900,1200');
+  assert.equal(coverPresentation(project).position, '50% 12.5%');
+  delete project.galleryCover;
+  assert.equal(coverPresentation(project, 900, 'gallery').position, '50% 12.5%');
 });
 
 test('contact URLs cannot lead to arbitrary hosts or scripts', () => {

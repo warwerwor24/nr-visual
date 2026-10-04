@@ -2,6 +2,8 @@
 
 ## Status terbaru, 4 Oktober 2026
 
+- Revisi navbar/crop/scrollbar: urutan deklarasi backdrop-filter diperbaiki agar build mempertahankan properti native yang dipakai Chrome/Edge. Popup memakai dialog viewport penuh dan panel dalam untuk mempertahankan animasi; scrollbar native tipis berada di kanan layar. WORK cover mempertahankan field `cover`; `galleryCover` opsional menyediakan Crop/Hotspot tersendiri untuk kolase kuning, tombol reuse asset tanpa upload ulang dan preview rasio. Pembaca CMS kini mengambil crop/hotspot dan memakai Sanity image URL builder yang sudah terpasang. Konten CMS tidak dimigrasi atau dipublish otomatis.
+
 - Validasi `videoFormat` diperbaiki: custom `rule.valid` lama hanya mengizinkan argumen pertama 16:9 dan menolak 9:16. Override dihapus; validasi native `options.list` mengizinkan empat format yang ditampilkan. Pemilih cover lokal kini tersedia pada Cover untuk video: geser waktu, upload hanya frame JPEG ke draft, review deskripsi, lalu Publish. Tidak ada upload video atau ekstraksi frame dari iframe Drive. Grid WORK tetap memakai ukuran cover yang seragam; format video hanya mengatur popup.
 
 - Popup terbaru: ukuran adaptif mengikuti `videoFormat` pada project (16:9 default, 9:16, 1:1, 4:5). Arrow/keyboard/cover menavigasi semua project terpublikasi; maksimal 5 cover terlihat sekaligus, bergeser saat next. Studio online sudah menerima field baru. Pemeriksaan lokal `scripts/check-project-dialog.mjs` lulus di 5 viewport dan kedua preferensi motion, tanpa menulis fixture ke CMS.

@@ -1,9 +1,10 @@
 ---
+import CoverImage from './CoverImage.astro';
 const { project, index = 0, demo = false } = Astro.props;
 ---
 <button class="work-card" data-project={project._id} aria-label={`${project.kind === 'video' ? 'Watch' : 'Open'} ${project.title}${demo ? ', sample project' : ''}`}>
   <span class="cover-frame">
-    <img src={project.cover} alt={project.alt} width="720" height="450" loading={index < 3 ? 'eager' : 'lazy'} decoding="async" />
+    <CoverImage project={project} loading={index < 3 ? 'eager' : 'lazy'} />
     <span class="card-top">{!demo && <span>{project.category}</span>}<span class="card-number">{String(index + 1).padStart(2, '0')}</span></span>
     <span class="play" aria-hidden="true">{project.kind === 'video' ? '▶' : '↗'}</span>
     <span class="cover-caption">{project.title}</span>

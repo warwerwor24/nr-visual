@@ -13,6 +13,14 @@ try {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.route('https://drive.google.com/**', route => route.fulfill({ contentType: 'text/html', body: '<body style="background:#141414;color:white">Video player fixture</body>' }));
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({width, height: 884});
+    await page.goto(base, {waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => scrollTo({top: 450, behavior: 'instant'}));
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('.site-header')).backdropFilter.includes('22px'));
+    await page.screenshot({path: `work/dialog-check/navbar-${width}.png`});
+    console.log(`PASS: Production-built navbar blur at ${width}px`);
+  }
   await page.route(`${base}/projects/`, async route => {
     const response = await route.fetch();
     let html = await response.text();
@@ -35,6 +43,11 @@ try {
     await page.goto(`${base}/projects/`, { waitUntil: 'domcontentloaded' });
     const card = page.locator('.work-card').first();
     await card.click();
+    assert(await page.locator('dialog').evaluate(element => {
+      const box = element.getBoundingClientRect();
+      return box.x === 0 && box.right >= innerWidth - 8 && box.top === 0 && box.height === innerHeight;
+    }), `Popup scroll container must reach screen edge at ${width}`);
+    assert.equal(await page.locator('dialog').evaluate(element => getComputedStyle(element, '::-webkit-scrollbar').width), '6px');
     for (let index = 0; index < ratios.length; index++) {
       if (index) await page.locator('.dialog-next').click();
       assert.equal(await page.locator('#dialog-title').innerText(), `Project ${index + 1}`);
@@ -68,11 +81,18 @@ try {
     assert.equal(await page.locator('#dialog-title').innerText(), 'Project 7');
     await page.locator('.dialog-thumbnail').nth(2).click();
     assert.equal(await page.locator('#dialog-title').innerText(), 'Project 3');
+    const pageScroll = await page.evaluate(() => scrollY);
+    await page.locator('.dialog-content').evaluate(element => element.style.minHeight = '180vh');
+    await page.locator('dialog').evaluate(element => element.scrollTop = 100);
+    assert(await page.locator('dialog').evaluate(element => element.scrollTop === 100));
+    assert.equal(await page.evaluate(() => scrollY), pageScroll);
+    await page.locator('.dialog-content').evaluate(element => element.style.minHeight = '');
     await page.keyboard.press('Escape');
+    await page.locator('#dialog-media iframe').waitFor({state: 'detached'});
     assert.equal(await page.locator('dialog[open]').count(), 0);
     assert.equal(await page.locator('#dialog-media iframe').count(), 0);
     assert(await card.evaluate(button => button === document.activeElement));
-    console.log(`PASS: ratios, five covers, navigation, keyboard and cleanup at ${width}×${height}`);
+    console.log(`PASS: ratios, five covers, navigation, screen-edge scrolling, keyboard and cleanup at ${width}×${height}`);
   }
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.setViewportSize({ width: 1260, height: 884 });
@@ -87,6 +107,10 @@ try {
     return item.left >= gallery.left - 1 && item.right <= gallery.right + 1;
   }), 'Active cover clipped after animated resize');
   await page.locator('.dialog-close').click();
+  await page.waitForFunction(() => !document.querySelector('dialog').open);
+  await page.locator('.work-card').first().click();
+  await page.waitForTimeout(800);
+  await page.locator('dialog').click({position: {x: 10, y: 10}});
   await page.waitForFunction(() => !document.querySelector('dialog').open);
   assert.deepEqual(errors, []);
   console.log('PASS: opening, resizing and closing animations; no JavaScript errors');
