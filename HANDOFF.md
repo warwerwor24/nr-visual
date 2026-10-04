@@ -1,6 +1,8 @@
 # Mulai di sini: handoff NR Visual
 
-## Status terbaru, 1 Oktober 2026
+## Status terbaru, 4 Oktober 2026
+
+- Validasi `videoFormat` diperbaiki: custom `rule.valid` lama hanya mengizinkan argumen pertama 16:9 dan menolak 9:16. Override dihapus; validasi native `options.list` mengizinkan empat format yang ditampilkan. Pemilih cover lokal kini tersedia pada Cover untuk video: geser waktu, upload hanya frame JPEG ke draft, review deskripsi, lalu Publish. Tidak ada upload video atau ekstraksi frame dari iframe Drive. Grid WORK tetap memakai ukuran cover yang seragam; format video hanya mengatur popup.
 
 - Popup terbaru: ukuran adaptif mengikuti `videoFormat` pada project (16:9 default, 9:16, 1:1, 4:5). Arrow/keyboard/cover menavigasi semua project terpublikasi; maksimal 5 cover terlihat sekaligus, bergeser saat next. Studio online sudah menerima field baru. Pemeriksaan lokal `scripts/check-project-dialog.mjs` lulus di 5 viewport dan kedua preferensi motion, tanpa menulis fixture ke CMS.
 

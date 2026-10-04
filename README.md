@@ -71,6 +71,17 @@ Deploy admin online memakai base path `/` karena Sanity hosting melayani file da
 - Saat berpindah, player sebelumnya dilepas agar tidak terus memutar. Escape/tombol × menutup dengan animasi dan mengembalikan fokus ke cover asal. Reduced motion tetap didukung.
 - Pemeriksaan browser: `node scripts/check-project-dialog.mjs` dengan preview di port 4322 dan Playwright tersedia melalui `PLAYWRIGHT_MODULE`. Tujuh project uji hanya disisipkan ke respons browser lokal; tidak dibuat di Sanity atau website publik.
 
+## Pilih cover dari frame video
+
+1. Buka **Projects → project kamu → Cover**. Di bawah input gambar biasa, pilih **Video file** dari komputer. Gunakan file yang sama dengan video di Drive; MP4 H.264 disarankan jika browser tidak membaca codec lain.
+2. Geser **Cover time** sampai frame yang diinginkan terlihat. Slider juga bisa digeser dengan tombol panah keyboard.
+3. Klik **Use this frame as cover**. Hanya gambar JPEG maksimal 1600 px pada sisi panjang yang diunggah ke Sanity; file video tetap di komputer dan playback tetap memakai link Drive.
+4. Periksa **Image description**, pilih **Video format** yang sesuai, lalu **Publish**. Menyimpan cover tidak otomatis mempublish project. Upload yang gagal mempertahankan cover sebelumnya.
+
+Cover di grid WORK tetap seragam, terlepas dari format video. Pilih frame dengan subjek dekat tengah atau upload cover landscape khusus agar crop kartu tidak memotong subjek penting. Format asli digunakan pada popup. Pemilihan frame langsung dari iframe Drive tidak tersedia pada alur ini.
+
+Pemeriksaan terfokus: `node scripts/check-cover-input.mjs`. Tes memakai video lokal buatan browser dan upload tiruan; tidak membuat atau mengubah konten Sanity. Memeriksa validasi skema sebenarnya, seek/capture portrait, perubahan draft, gagal upload, codec tidak didukung, keyboard, mobile, foto dan akses read-only.
+
 ## Vercel dan pembaruan otomatis
 
 1. Masukkan folder proyek ini ke repository milik sendiri, tanpa `.env`, `node_modules`, folder `work`, atau `.vercel`. Hubungkan repository ke Vercel.
