@@ -2,6 +2,7 @@
 import '../../styles/site.css';
 import '../../styles/links.css';
 import { loadContent } from '../../lib/content.mjs';
+import { whatsappUrl } from '../../lib/media.mjs';
 import CoverImage from '../../components/CoverImage.astro';
 import ProjectDialog from '../../components/ProjectDialog.astro';
 
@@ -9,29 +10,32 @@ const { demo, settings, highlights } = await loadContent({ ...import.meta.env, .
 const logo = settings.logo || '/nrvisual-logo-transparent.png';
 const email = 'nouvalrla@gmail.com';
 const links = [
-  { label: 'WhatsApp', href: settings.whatsapp || 'https://wa.me/628176383770', detail: "Let's talk about your vision", primary: true },
+  { label: 'WhatsApp', href: settings.whatsapp || whatsappUrl('628176383770'), detail: "Let's talk about your vision", primary: true },
   { label: 'Website', href: '/', detail: 'Slide in for more of my works', website: true },
   { label: 'Instagram', href: settings.instagram || 'https://www.instagram.com/ivalrz/', detail: '@ivalrz' },
   { label: 'LinkedIn', href: settings.linkedin || 'https://www.linkedin.com/in/nouvalrla/', detail: 'Get to know my career' },
   { label: 'Email', href: `mailto:${email}`, detail: email },
 ];
 const description = `Featured projects and contact links for ${settings.brandName}.`;
+const shareImage = new URL('/hero-portrait-rim-light.jpg', Astro.site || Astro.url).href;
 ---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Links | {settings.brandName}</title>
+    <title>Find Me Here | NR Visual</title>
     <meta name="description" content={description} />
     <meta name="theme-color" content="#11120f" />
     {demo && <meta name="robots" content="noindex,nofollow" />}
     {Astro.site && <link rel="canonical" href={new URL('/findmehere', Astro.site)} />}
-    <meta property="og:title" content={`Links | ${settings.brandName}`} />
+    <meta property="og:title" content="Find Me Here | NR Visual" />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     {Astro.site && <meta property="og:url" content={new URL('/findmehere', Astro.site)} />}
-    {settings.shareImage && <meta property="og:image" content={settings.shareImage} />}
+    <meta property="og:image" content={shareImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={shareImage} />
     <link rel="icon" type="image/png" href="/nr-favicon.png" />
   </head>
   <body class="links-body">

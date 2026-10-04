@@ -1,12 +1,13 @@
 ---
 import '../styles/site.css';
 import { loadContent } from '../lib/content.mjs';
+import { whatsappUrl } from '../lib/media.mjs';
 import ProjectCard from '../components/ProjectCard.astro';
 import ProjectDialog from '../components/ProjectDialog.astro';
 import CoverImage from '../components/CoverImage.astro';
 const { demo, settings, highlights, collage, projects } = await loadContent({ ...import.meta.env, ...process.env });
 const logo = settings.logo || '/nrvisual-logo-transparent.png';
-const whatsapp = settings.whatsapp || 'https://wa.me/628176383770';
+const whatsapp = settings.whatsapp || whatsappUrl('628176383770');
 const instagram = settings.instagram || 'https://www.instagram.com/ivalrz/';
 const linkedin = settings.linkedin || 'https://www.linkedin.com/in/nouvalrla/';
 const portfolioBrands = [
@@ -20,7 +21,8 @@ const portfolioBrands = [
   { alt: 'London Taxi', url: '/client-logos/london-taxi.png', tone: 'badge' },
 ];
 const clientLogos = settings.clientLogos?.length ? settings.clientLogos : demo ? portfolioBrands : [];
-const portrait = settings.heroPortrait?.url || (demo ? '/hero-portrait-cover.png' : null);
+const portrait = '/hero-portrait-rim-light.jpg';
+const shareImage = new URL(portrait, Astro.site || Astro.url).href;
 const all = [...new Map([...projects, ...highlights, ...collage].map(project => [project._id, project])).values()];
 const services = [
   ['Brand Campaign Video', 'Films for new ideas, new products and the moments a brand wants to be seen.'],
@@ -34,15 +36,17 @@ const services = [
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{settings.brandName} | Photography & Film</title>
+    <title>NR Visual Works</title>
     <meta name="description" content={settings.heroText} />
     <meta name="theme-color" content="#11120f" />
     {demo && <meta name="robots" content="noindex,nofollow" />}
     {Astro.site && <link rel="canonical" href={Astro.site} />}
-    <meta property="og:title" content={`${settings.brandName} | Photography & Film`} />
+    <meta property="og:title" content="NR Visual Works" />
     <meta property="og:description" content={settings.heroText} />
     <meta property="og:type" content="website" />
-    {settings.shareImage && <meta property="og:image" content={settings.shareImage} />}
+    <meta property="og:image" content={shareImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={shareImage} />
     <link rel="icon" type="image/png" href="/nr-favicon.png" />
     {demo && <link rel="preconnect" href="https://images.unsplash.com" />}
   </head>
@@ -56,7 +60,7 @@ const services = [
     </header>
     <main id="main">
       <section class="hero" id="top" aria-labelledby="hero-title">
-        {portrait && <img class="hero-portrait" src={portrait} alt={settings.heroPortrait?.alt || 'Portrait with cyan motion trails and warm light across the eyes.'} width="1672" height="941" fetchpriority="high" />}
+        <img class="hero-portrait" src={portrait} alt="Nouval against a blue backdrop with rim light around his hair." width="2752" height="1536" fetchpriority="high" />
         <div class="hero-shade" aria-hidden="true"></div>
         <p class="hero-kicker">Experienced visual creative</p>
         <ul class="hero-services" aria-label="Services">{services.map(([title]) => <li>{title}</li>)}</ul>

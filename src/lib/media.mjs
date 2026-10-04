@@ -28,7 +28,7 @@ export function socialUrl(value, host) {
 export function whatsappUrl(value) {
   const phone = String(value || '').replace(/[\s()+-]/g, '');
   if (!/^[1-9]\d{7,14}$/.test(phone)) return null;
-  return `https://wa.me/${phone}?text=${encodeURIComponent("Hi, I'd like to discuss a photo or video project.")}`;
+  return `https://wa.me/${phone}?text=${encodeURIComponent('Halo Nouval, ada project yang ingin kuobrolin!')}`;
 }
 
 export function publishedProjects(items = [], videoOnly = false) {
