@@ -82,11 +82,11 @@ Cover di grid WORK tetap seragam, terlepas dari format video. Format asli diguna
 
 ### Crop WORK dan galeri secara terpisah
 
-1. Pada **WORK cover**, buka editor gambar bawaan Sanity. Atur batas Crop dan pusat Hotspot pada bagian penting (misalnya wajah). Preview WORK desktop/mobile membantu memilih posisi. Ini mengatur kartu WORK, arsip dan thumbnail popup.
+1. Pada **WORK cover**, buka editor gambar bawaan Sanity. Atur batas Crop dan pusat Hotspot pada bagian penting (misalnya wajah). Periksa preview **WORK (16:9)**; kartu WORK dan arsip memakai rasio ini pada semua ukuran layar. Thumbnail popup menggunakan gambar yang sama pada rasio thumbnail-nya.
 2. Pada **Gallery cover**, klik **Use WORK cover image** untuk memakai file yang sama tanpa upload ulang. Buka editor gambar di field ini dan atur Crop/Hotspot dengan preview **Yellow gallery (4:5)**. Pengaturan WORK tidak berubah. Mengklik tombol reuse lagi mengganti pilihan gambar dan mereset crop galeri.
 3. Periksa deskripsi gambar, lalu **Publish** project. Tunggu deployment otomatis berhasil dan refresh website.
 
-Gallery cover opsional: proyek lama atau field kosong tetap memakai WORK cover. Crop membatasi gambar melalui CDN Sanity; CSS mengikuti pusat Hotspot pada rasio kartu responsif. Hotspot yang sangat luas tetap perlu diperiksa pada layar berbeda. Mengganti frame WORK tidak otomatis mengganti gambar galeri yang sudah dipilih.
+Gallery cover opsional: proyek lama atau field kosong tetap memakai WORK cover. CDN memakai perhitungan Crop/Hotspot native Sanity pada ukuran lebar dan tinggi kartu; CSS tidak menghitung ulang posisi crop. WORK/arsip tetap 3 kolom desktop, 2 tablet dan 1 HP; rasio cover 16:9 tidak mengubah jumlah kolom. Mengganti frame WORK tidak otomatis mengganti gambar galeri yang sudah dipilih.
 
 Pemeriksaan terfokus: `node scripts/check-cover-input.mjs`. Tes memakai video lokal buatan browser dan upload tiruan; tidak membuat atau mengubah konten Sanity. Memeriksa validasi skema sebenarnya, seek/capture portrait, perubahan draft, gagal upload, codec tidak didukung, keyboard, mobile, foto dan akses read-only.
 

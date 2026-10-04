@@ -22,24 +22,24 @@ test('video formats preserve exact ratios and existing projects default to lands
   for (const format of [undefined, 'invalid', 'constructor', '__proto__']) assert.equal(videoAspectRatio(format), 16 / 9);
 });
 
-test('covers apply Sanity crop and keep the hotspot relative to the cropped image', () => {
+test('cover crops use native Sanity hotspot framing at the actual WORK and gallery ratios', () => {
   const cover = 'https://cdn.sanity.io/images/n4rtv48x/production/3dcecfe6473ea785be50e922ee8dfbd923a5de79-900x1600.jpg';
   const project = { cover, coverImage: { asset: { _ref: 'image-3dcecfe6473ea785be50e922ee8dfbd923a5de79-900x1600-jpg' }, crop: { left: 0, right: 0, top: .1, bottom: .1 }, hotspot: { x: .5, y: .2, width: .2, height: .2 } } };
   const result = coverPresentation(project);
-  assert.equal(new URL(result.src).searchParams.get('rect'), '0,160,900,1280');
-  assert.equal(result.position, '50% 12.5%');
-  project.coverImage.hotspot.y = .01;
-  assert.equal(coverPresentation(project).position, '50% 0%');
+  assert.equal(new URL(result.src).searchParams.get('rect'), '0,160,900,506');
+  assert.equal(new URL(result.src).searchParams.get('h'), '675');
+  assert.equal(result.position, '50% 50%');
+  project.coverImage.hotspot.y = .8;
+  assert.equal(new URL(coverPresentation(project).src).searchParams.get('rect'), '0,934,900,506');
   delete project.coverImage.hotspot;
   assert.equal(coverPresentation(project).position, '50% 50%');
   assert.deepEqual(coverPresentation({ cover: '/cover.png' }), { src: '/cover.png', position: '50% 50%' });
-  project.coverImage.hotspot = {x: .5, y: .2};
-  project.galleryCover = { ...project.coverImage, url: cover, crop: {left: 0, right: 0, top: 0, bottom: .25}, hotspot: {x: .5, y: .6} };
-  assert.equal(coverPresentation(project, 900, 'gallery').position, '50% 80%');
-  assert.equal(new URL(coverPresentation(project, 900, 'gallery').src).searchParams.get('rect'), '0,0,900,1200');
-  assert.equal(coverPresentation(project).position, '50% 12.5%');
+  project.coverImage.hotspot = {x: .5, y: .2, width: .2, height: .2};
+  project.galleryCover = { ...project.coverImage, url: cover, crop: {left: 0, right: 0, top: 0, bottom: .25}, hotspot: {x: .5, y: .6, width: .2, height: .2} };
+  assert.equal(new URL(coverPresentation(project, 900, 'gallery').src).searchParams.get('rect'), '0,75,900,1125');
+  assert.equal(new URL(coverPresentation(project).src).searchParams.get('rect'), '0,160,900,506');
   delete project.galleryCover;
-  assert.equal(coverPresentation(project, 900, 'gallery').position, '50% 12.5%');
+  assert.equal(new URL(coverPresentation(project, 900, 'gallery').src).searchParams.get('rect'), '0,160,900,1125');
 });
 
 test('contact URLs cannot lead to arbitrary hosts or scripts', () => {

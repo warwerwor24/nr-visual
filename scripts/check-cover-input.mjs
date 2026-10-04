@@ -64,7 +64,7 @@ try {
   assert.ok((await Promise.all(rules.map(rule => rule.validate('bad', context)))).flat().length > 0);
   console.log('PASS: Actual schema accepts all four formats and rejects invalid values.');
   const fields = config.schema.types.find(type => type.name === 'project').fields;
-  assert.equal(fields.find(field => field.name === 'cover').options.hotspot.previews[0].aspectRatio, 1.6);
+  assert.equal(fields.find(field => field.name === 'cover').options.hotspot.previews[0].aspectRatio, 16 / 9);
   const galleryField = fields.find(field => field.name === 'galleryCover');
   assert.equal(galleryField.options.hotspot.previews[0].aspectRatio, .8);
   assert.deepEqual((await Promise.all(normalizeValidationRules({...galleryField, jsonType: 'object'}).map(rule => rule.validate(undefined, {...context, path: ['galleryCover'], type: {jsonType: 'object'}})))).flat(), [], 'Gallery override stays optional for existing projects');
@@ -79,22 +79,29 @@ try {
     const canvas = document.createElement('canvas');
     canvas.width = 360;
     canvas.height = 640;
+    document.body.append(canvas);
     const context = canvas.getContext('2d');
-    const stream = canvas.captureStream(10);
+    const stream = canvas.captureStream(0);
+    const track = stream.getVideoTracks()[0];
     const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp8' });
     const chunks = [];
     recorder.ondataavailable = event => chunks.push(event.data);
     const finished = new Promise(resolve => { recorder.onstop = resolve; });
     recorder.start();
-    const draw = setInterval(() => { context.fillStyle = '#5fccf4'; context.fillRect(0, 0, 360, 640); }, 100);
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    for (let frame = 0; frame < 16; frame++) {
+      context.fillStyle = frame % 2 ? '#5fccf4' : '#faef59';
+      context.fillRect(0, 0, 360, 640);
+      track.requestFrame();
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
     recorder.stop();
     await finished;
-    clearInterval(draw);
     stream.getTracks().forEach(track => track.stop());
+    canvas.remove();
     return Array.from(new Uint8Array(await new Blob(chunks).arrayBuffer()));
   });
   const fixture = Buffer.from(recording);
+  assert(fixture.length > 500, 'Browser fixture must contain encoded video frames, not just a WebM header');
   await writeFile(`${folder}/portrait.webm`, fixture);
   await page.getByLabel('Video file', { exact: true }).setInputFiles({ name: 'portrait.webm', mimeType: 'video/webm', buffer: fixture });
   const save = page.getByRole('button', { name: 'Use this frame as cover' });

@@ -2,6 +2,8 @@
 
 ## Status terbaru, 4 Oktober 2026
 
+- Koreksi crop berikutnya: WORK/arsip disamakan 16:9 di semua breakpoint, mempertahankan 3 kolom desktop / 2 tablet / 1 HP. Cover helper kini meminta width + height dan memakai perhitungan Crop/Hotspot native Sanity; posisi CSS selalu center pada gambar yang sudah dipotong CDN. Ini menggantikan pendekatan hotspot-centre pada revisi sebelumnya. Preview Studio bernama WORK (16:9); galeri kuning tetap 4:5 dengan override terpisah.
+
 - Revisi navbar/crop/scrollbar: urutan deklarasi backdrop-filter diperbaiki agar build mempertahankan properti native yang dipakai Chrome/Edge. Popup memakai dialog viewport penuh dan panel dalam untuk mempertahankan animasi; scrollbar native tipis berada di kanan layar. WORK cover mempertahankan field `cover`; `galleryCover` opsional menyediakan Crop/Hotspot tersendiri untuk kolase kuning, tombol reuse asset tanpa upload ulang dan preview rasio. Pembaca CMS kini mengambil crop/hotspot dan memakai Sanity image URL builder yang sudah terpasang. Konten CMS tidak dimigrasi atau dipublish otomatis.
 
 - Validasi `videoFormat` diperbaiki: custom `rule.valid` lama hanya mengizinkan argumen pertama 16:9 dan menolak 9:16. Override dihapus; validasi native `options.list` mengizinkan empat format yang ditampilkan. Pemilih cover lokal kini tersedia pada Cover untuk video: geser waktu, upload hanya frame JPEG ke draft, review deskripsi, lalu Publish. Tidak ada upload video atau ekstraksi frame dari iframe Drive. Grid WORK tetap memakai ukuran cover yang seragam; format video hanya mengatur popup.
