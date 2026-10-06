@@ -100,6 +100,7 @@ const services = [
         <div class="clients-heading"><h2 id="clients-title">CLIENTS</h2></div>
         <ul class="client-logos">
           {clientLogos.map(client => <li class={client.tone ? `client-${client.tone}` : undefined}><img src={client.url} alt={client.alt} width="220" height="80" loading="lazy" /></li>)}
+          <li class="client-euromedica"><img src="/client-logos/euromedica.png" alt="Euromedica" width="220" height="80" loading="lazy" /></li>
         </ul>
         <p class="clients-more">and many more..</p>
       </section>}
