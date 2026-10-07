@@ -1,6 +1,7 @@
 ---
 import { driveMedia, videoAspectRatio } from '../lib/media.mjs';
 import CoverImage from './CoverImage.astro';
+import { photoUrl } from '../lib/cover.mjs';
 const { projects } = Astro.props;
 ---
 <dialog id="project-dialog" aria-labelledby="dialog-title">
@@ -21,9 +22,25 @@ const { projects } = Astro.props;
   <ul class="dialog-gallery" aria-label="Browse projects">{projects.map(project => <li><button class="dialog-thumbnail" data-dialog-project={project._id} aria-label={`Open ${project.title}`} aria-pressed="false"><CoverImage project={project} alt="" width={160} height={100} /><span class="visually-hidden">{project.title}</span></button></li>)}</ul>
   </div>
   </div>
+  <section class="photo-viewer" hidden aria-labelledby="photo-view-title">
+    <header class="photo-view-header"><button class="photo-back" type="button" aria-label="Close photo and return to album"><span aria-hidden="true">×</span></button><h2 id="photo-view-title"></h2><time class="photo-view-date"></time></header>
+    <div class="photo-view-stage">
+      <div class="photo-peek photo-peek-prev" aria-hidden="true"><img alt="" /></div>
+      <figure class="photo-view-main">
+        <div class="photo-view-focus">
+          <img class="photo-view-image" alt="" />
+          <button class="photo-step photo-prev" type="button" aria-label="Previous photo"><span aria-hidden="true">‹</span></button>
+          <button class="photo-step photo-next" type="button" aria-label="Next photo"><span aria-hidden="true">›</span></button>
+        </div>
+        <figcaption class="photo-view-status" role="status"></figcaption>
+      </figure>
+      <div class="photo-peek photo-peek-next" aria-hidden="true"><img alt="" /></div>
+    </div>
+    <ul class="photo-filmstrip" aria-label="Photos in this album"></ul>
+  </section>
 </dialog>
-<div hidden id="project-templates">{projects.map(project => <template data-project-template={project._id} data-title={project.title} data-description={project.description || ''} data-ratio={videoAspectRatio(project.videoFormat)} data-embed={project.kind === 'video' ? driveMedia(project.driveUrl)?.embed || '' : ''}>
-  {(!driveMedia(project.driveUrl) || project.kind === 'photo') && <div class="photo-gallery">{(project.kind === 'photo' ? project.photos : [{ url: project.cover, alt: project.alt }]).filter(photo => photo?.url).map(photo => <figure><img src={photo.url} alt={photo.alt} width="1400" height="900" loading="lazy" /></figure>)}</div>}
+<div hidden id="project-templates">{projects.map(project => <template data-project-template={project._id} data-kind={project.kind} data-title={project.title} data-completed-at={project.completedAt || ''} data-description={project.description || ''} data-ratio={videoAspectRatio(project.videoFormat)} data-embed={project.kind === 'video' ? driveMedia(project.driveUrl)?.embed || '' : ''}>
+  {(!driveMedia(project.driveUrl) || project.kind === 'photo') && <div class="photo-gallery">{(project.kind === 'photo' ? project.photos : [{ url: project.cover, alt: project.alt }]).filter(photo => photo?.url).map((photo, index) => <button type="button" class="photo-tile" data-photo-index={index} aria-label={`View photo ${index + 1}: ${photo.alt || project.title}`}><img src={photoUrl(photo.url)} data-full-src={photoUrl(photo.url, 2000)} alt={photo.alt} width={photo.width || undefined} height={photo.height || undefined} loading="lazy" decoding="async" /></button>)}</div>}
 </template>)}</div>
 <script src="../scripts/dialog.ts"></script>
 <script src="../scripts/fit-project-titles.ts"></script>

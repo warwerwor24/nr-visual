@@ -18,6 +18,7 @@ function fitCaption(caption: HTMLElement) {
     return;
   }
   caption.style.removeProperty('font-size');
+  if (caption.id === 'dialog-title' && caption.closest('.is-photo-album')) return;
   const maximum = parseFloat(getComputedStyle(caption).fontSize);
   const lines = caption.id === 'dialog-title' ? 1 : matchMedia('(max-width: 600px)').matches ? 2 : 1;
   const text = document.createRange();

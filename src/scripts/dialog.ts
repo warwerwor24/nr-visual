@@ -17,9 +17,147 @@ let trigger: HTMLButtonElement | null = null;
 let loadTimer: ReturnType<typeof setTimeout> | undefined;
 const contentItems = [media, title, description];
 let contentAnimations: Animation[] = [];
+const photoViewer = dialog.querySelector<HTMLElement>('.photo-viewer')!;
+const photoImage = photoViewer.querySelector<HTMLImageElement>('.photo-view-image')!;
+const photoStatus = photoViewer.querySelector<HTMLElement>('.photo-view-status')!;
+const filmstrip = photoViewer.querySelector<HTMLElement>('.photo-filmstrip')!;
+const photoBack = photoViewer.querySelector<HTMLButtonElement>('.photo-back')!;
+const photoPrev = photoViewer.querySelector<HTMLButtonElement>('.photo-prev')!;
+const photoNext = photoViewer.querySelector<HTMLButtonElement>('.photo-next')!;
+let albumPhotos: HTMLImageElement[] = [];
+let photoIndex = 0;
+let albumScroll = 0;
+let photoAnimations: Animation[] = [];
+
+function showPhoto(index: number) {
+  if (index < 0 || index >= albumPhotos.length) return;
+  const opening = photoViewer.hidden;
+  const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const source = opening ? media.querySelector<HTMLImageElement>(`[data-photo-index="${index}"] img`)?.getBoundingClientRect() : undefined;
+  photoAnimations.forEach(animation => animation.cancel());
+  photoAnimations = [];
+  if (opening) {
+    albumScroll = dialog.scrollTop;
+    contentAnimations.forEach(animation => animation.cancel());
+    contentAnimations = [];
+    panelContent.inert = true;
+    panelContent.setAttribute('aria-hidden', 'true');
+    filmstrip.replaceChildren(...albumPhotos.map((photo, number) => {
+      const item = document.createElement('li');
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'photo-thumbnail';
+      button.setAttribute('aria-label', `View photo ${number + 1}: ${photo.alt}`);
+      const image = document.createElement('img');
+      image.src = photo.src;
+      image.alt = '';
+      image.loading = 'lazy';
+      image.onerror = () => { image.hidden = true; };
+      button.append(image);
+      button.addEventListener('click', () => showPhoto(number));
+      item.append(button);
+      return item;
+    }));
+    photoViewer.querySelector<HTMLElement>('#photo-view-title')!.textContent = title.textContent;
+    const date = photoViewer.querySelector<HTMLTimeElement>('.photo-view-date')!;
+    const completedAt = templates[activeIndex].dataset.completedAt || '';
+    const parsed = new Date(completedAt);
+    date.hidden = !completedAt || Number.isNaN(parsed.getTime());
+    date.dateTime = completedAt;
+    date.textContent = date.hidden ? '' : parsed.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+    dialog.setAttribute('aria-labelledby', 'photo-view-title');
+    dialog.classList.add('is-photo-view');
+    photoViewer.hidden = false;
+    dialog.scrollTop = 0;
+    panelContent.scrollTop = albumScroll;
+    photoBack.focus();
+    if (motion) {
+      photoAnimations = [...photoViewer.querySelectorAll<HTMLElement>('.photo-view-header, .photo-peek, .photo-step, .photo-filmstrip, .photo-view-status')].map(element => element.animate([
+        { opacity: 0 }, { opacity: getComputedStyle(element).opacity },
+      ], { duration: 320, easing: 'ease-out', fill: 'both' }));
+      photoAnimations.forEach(animation => animation.finished.then(() => animation.cancel()).catch(() => {}));
+    }
+  }
+  photoIndex = index;
+  photoImage.hidden = false;
+  photoImage.alt = albumPhotos[index].alt;
+  photoStatus.textContent = 'Loading photo…';
+  photoImage.style.opacity = opening && motion ? '0' : '';
+  photoImage.onload = () => {
+    photoStatus.textContent = `${index + 1} / ${albumPhotos.length}`;
+    photoImage.style.opacity = '';
+    if (!opening || !motion) return;
+    const target = photoImage.getBoundingClientRect();
+    const transform = source && source.width && source.height && target.width && target.height
+      ? `translate(${source.left - target.left}px, ${source.top - target.top}px) scale(${source.width / target.width}, ${source.height / target.height})`
+      : 'scale(.92)';
+    const animation = photoImage.animate([
+      { transform, transformOrigin: 'top left', opacity: .6 },
+      { transform: 'none', transformOrigin: 'top left', opacity: 1 },
+    ], { duration: 460, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'both' });
+    photoAnimations.push(animation);
+    animation.finished.then(() => animation.cancel()).catch(() => {});
+  };
+  photoImage.onerror = () => { photoImage.style.opacity = ''; photoImage.hidden = true; photoStatus.textContent = 'Photo unavailable'; };
+  photoImage.src = albumPhotos[index].dataset.fullSrc || albumPhotos[index].src;
+  [photoPrev, photoNext].forEach((button, number) => {
+    const adjacent = albumPhotos[index + (number === 0 ? -1 : 1)];
+    button.disabled = !adjacent;
+    const image = photoViewer.querySelector<HTMLImageElement>(number === 0 ? '.photo-peek-prev img' : '.photo-peek-next img')!;
+    image.hidden = !adjacent;
+    if (adjacent) image.src = adjacent.src;
+    else image.removeAttribute('src');
+    image.onerror = () => { image.hidden = true; };
+  });
+  [...filmstrip.querySelectorAll<HTMLButtonElement>('button')].forEach((button, number) => button.setAttribute('aria-pressed', String(number === index)));
+  filmstrip.children[index]?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'instant' });
+  if ((document.activeElement === photoPrev && photoPrev.disabled) || (document.activeElement === photoNext && photoNext.disabled)) photoBack.focus();
+}
+
+function backToAlbum(restoreFocus = true) {
+  if (photoViewer.hidden) return;
+  photoViewer.hidden = true;
+  photoAnimations.forEach(animation => animation.cancel());
+  photoAnimations = [];
+  panelContent.inert = false;
+  panelContent.removeAttribute('aria-hidden');
+  panelContent.scrollTop = 0;
+  dialog.classList.remove('is-photo-view');
+  dialog.setAttribute('aria-labelledby', 'dialog-title');
+  photoImage.onload = photoImage.onerror = null;
+  photoImage.style.opacity = '';
+  photoImage.removeAttribute('src');
+  filmstrip.replaceChildren();
+  if (restoreFocus) {
+    dialog.scrollTop = albumScroll;
+    media.querySelector<HTMLButtonElement>(`[data-photo-index="${photoIndex}"]`)?.focus({ preventScroll: true });
+  }
+}
+
+photoBack.addEventListener('click', () => backToAlbum());
+photoPrev.addEventListener('click', () => showPhoto(photoIndex - 1));
+photoNext.addEventListener('click', () => showPhoto(photoIndex + 1));
+media.addEventListener('click', event => {
+  const tile = event.target instanceof Element ? event.target.closest<HTMLElement>('[data-photo-index]') : null;
+  if (tile && dialog.classList.contains('is-photo-album')) showPhoto(Number(tile.dataset.photoIndex));
+});
+let photoTouch: { x: number; y: number } | null = null;
+photoViewer.querySelector('.photo-view-stage')!.addEventListener('touchstart', event => {
+  const touch = (event as TouchEvent).touches[0];
+  photoTouch = { x: touch.clientX, y: touch.clientY };
+}, { passive: true });
+photoViewer.querySelector('.photo-view-stage')!.addEventListener('touchend', event => {
+  const touch = (event as TouchEvent).changedTouches[0];
+  if (!photoTouch) return;
+  const dx = touch.clientX - photoTouch.x;
+  const dy = touch.clientY - photoTouch.y;
+  photoTouch = null;
+  if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) showPhoto(photoIndex + (dx < 0 ? 1 : -1));
+}, { passive: true });
 
 function imageErrors(root: ParentNode) {
   root.querySelectorAll('img').forEach(img => {
+    if (img.closest('.photo-viewer')) return;
     img.addEventListener('error', () => {
       const message = document.createElement('span');
       message.className = 'media-failure';
@@ -34,6 +172,8 @@ function showProject(index: number, switching = false) {
   clearMedia();
   activeIndex = index;
   const template = templates[index];
+  dialog.classList.toggle('is-photo-album', template.dataset.kind === 'photo');
+  albumPhotos = [...template.content.querySelectorAll<HTMLImageElement>('.photo-gallery img')];
   const ratio = Number(template.dataset.ratio);
   dialog.style.setProperty('--media-ratio', String(Number.isFinite(ratio) && ratio > 0 ? ratio : 16 / 9));
   media.classList.toggle('has-video', Boolean(template.dataset.embed));
@@ -60,6 +200,7 @@ function showProject(index: number, switching = false) {
   } else {
     media.append(template.content.cloneNode(true));
     imageErrors(media);
+    if (!albumPhotos.length) media.textContent = 'Photos have not been added to this album yet.';
   }
   if (switching) {
     thumbnails[index]?.scrollIntoView({ block: 'nearest', inline: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
@@ -80,6 +221,15 @@ document.querySelectorAll<HTMLButtonElement>('button[data-project]').forEach(but
     trigger = button;
     showProject(index);
     dialog.showModal();
+    if (dialog.classList.contains('is-photo-album')) {
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        contentAnimations = [...media.querySelectorAll<HTMLElement>('.photo-tile')].map(tile => tile.animate([
+          { opacity: 0 }, { opacity: 1 },
+        ], { duration: 420, delay: Math.random() * 320, easing: 'ease-out', fill: 'both' }));
+        contentAnimations.forEach(animation => animation.finished.then(() => animation.cancel()).catch(() => {}));
+      }
+      return;
+    }
     thumbnails[index]?.scrollIntoView({ block: 'nearest', inline: 'start', behavior: 'instant' });
     const panel = panelContent.getBoundingClientRect();
     dialog.style.setProperty('--open-x', `${card.left + card.width / 2 - panel.left - panel.width / 2}px`);
@@ -106,6 +256,14 @@ thumbnails.forEach((button, index) => button.addEventListener('click', () => {
   if (index !== activeIndex && !dialog.classList.contains('is-closing')) showProject(index, true);
 }));
 dialog.addEventListener('keydown', event => {
+  if (!photoViewer.hidden) {
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+      event.preventDefault();
+      showPhoto(photoIndex + (event.key === 'ArrowLeft' ? -1 : 1));
+    }
+    return;
+  }
+  if (dialog.classList.contains('is-photo-album')) return;
   if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key) && !(event.target instanceof Element && event.target.closest('.dialog-info'))) {
     event.preventDefault();
     navigate(event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 1);
@@ -117,6 +275,7 @@ dialog.addEventListener('transitionend', event => {
   }
 });
 function clearMedia() {
+  backToAlbum(false);
   contentAnimations.forEach(animation => animation.cancel());
   contentAnimations = [];
   clearTimeout(loadTimer);
@@ -141,7 +300,7 @@ async function closeProject() {
     ], { duration: 120, easing: 'ease-in', fill: 'forwards' }));
     const animation = panelContent.animate([
       from,
-      { transform: 'translate(var(--open-x), var(--open-y)) scale(var(--open-scale))', opacity: 0 },
+      dialog.classList.contains('is-photo-album') ? { opacity: 0 } : { transform: 'translate(var(--open-x), var(--open-y)) scale(var(--open-scale))', opacity: 0 },
     ], { duration: 280, delay: 120, easing: 'cubic-bezier(.4, 0, .8, .4)', fill: 'forwards' });
     await animation.finished.catch(() => {});
     dialog.close();
@@ -194,7 +353,7 @@ focusButton.addEventListener('click', async () => {
 dialog.addEventListener('animationend', event => {
   if (event.target === panelContent) dialog.classList.remove('is-opening');
 });
-dialog.addEventListener('cancel', event => { event.preventDefault(); closeProject(); });
+dialog.addEventListener('cancel', event => { event.preventDefault(); if (!photoViewer.hidden) backToAlbum(); else closeProject(); });
 let startedOutside = false;
 dialog.addEventListener('pointerdown', event => { startedOutside = event.target === dialog; });
 dialog.addEventListener('click', event => { if (startedOutside && event.target === dialog) closeProject(); });
