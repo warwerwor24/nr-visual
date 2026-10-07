@@ -32,7 +32,7 @@ try {
     html = html.slice(0, start) + marker + templates + '</div>' + html.slice(end);
     const galleryStart = html.indexOf('<ul class="dialog-gallery"');
     const galleryEnd = html.indexOf('</ul>', galleryStart) + 5;
-    const covers = ratios.map((_, index) => `<li><button class="dialog-thumbnail" data-dialog-project="check-${index}" aria-label="Open project ${index + 1}" aria-pressed="false"><img src="/hero-portrait-cover.png" alt="" width="160" height="100"></button></li>`).join('');
+    const covers = ratios.map((_, index) => `<li><button class="dialog-thumbnail" data-dialog-project="check-${index}" aria-label="Open project ${index + 1}" aria-pressed="false"><img src="/hero-portrait-cover.png" alt="" width="160" height="100"><span class="visually-hidden">Project ${index + 1}</span></button></li>`).join('');
     html = html.slice(0, galleryStart) + `<ul class="dialog-gallery" aria-label="Browse projects">${covers}</ul>` + html.slice(galleryEnd);
     html = html.replace(/data-project="[^"]+"/, 'data-project="check-0"');
     await route.fulfill({ response, body: html });
@@ -43,6 +43,7 @@ try {
     await page.goto(`${base}/projects/`, { waitUntil: 'domcontentloaded' });
     const card = page.locator('.work-card').first();
     await card.click();
+    assert.equal(await page.locator('dialog').evaluate(element => element.scrollWidth > element.clientWidth), false, 'Accessible thumbnail labels must not expand dialog width');
     assert(await page.locator('dialog').evaluate(element => {
       const box = element.getBoundingClientRect();
       return box.x === 0 && box.right >= innerWidth - 8 && box.top === 0 && box.height === innerHeight;
