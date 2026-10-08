@@ -1,6 +1,9 @@
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
+import { randomBytes } from 'node:crypto';
 import driveVideo from '../api/drive-video.mjs';
+
+process.env.DRIVE_VIDEO_SIGNING_SECRET ||= randomBytes(32).toString('hex');
 
 const server = createServer((request, response) => {
   if (request.url?.split('?')[0] === '/api/drive-video') return driveVideo(request, response);

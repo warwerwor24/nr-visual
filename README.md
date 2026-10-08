@@ -77,16 +77,16 @@ Deploy admin online memakai base path `/` karena Sanity hosting melayani file da
 
 ## Pilih cover dari frame video
 
-Di tab Video, isi Google Drive video link, lalu buka Cover dan klik **Muat video dari Drive**. Tunggu video selesai dimuat, geser **Cover time** untuk memilih frame sendiri, lalu klik **Use this frame as cover**. **Batalkan pemuatan** menghentikan download. Hanya gambar cover diupload ke Sanity; loading video tidak mengubah cover atau mempublish project. Video harus menggunakan **Anyone with the link → Viewer** dan mengizinkan download. Jika Drive membatasi akses atau browser tidak membaca codec, file lokal tetap tersedia.
-
-Function `api/drive-video.mjs` memeriksa keanggotaan project menggunakan login Sanity, lalu mengambil video dari host download Drive. Token login hanya dikirim melalui header ke layanan dan Sanity, tidak ke Drive atau URL video. Server mengalirkan respons; browser menampung video sementara sebelum pemilihan frame. File besar membutuhkan waktu dan memori lebih banyak. `npm run studio` menjalankan Studio dan layanan lokal di 127.0.0.1:3334. Endpoint admin online default adalah https://nr-visual.vercel.app/api/drive-video; `SANITY_STUDIO_DRIVE_VIDEO_URL` dapat menggantinya saat build Studio. Deploy function ke Vercel sebelum deploy Studio baru.
-
-1. Buka **Projects → project kamu → WORK cover**. Di bawah input gambar biasa, pilih **Video file** dari komputer. Gunakan file yang sama dengan video di Drive; MP4 H.264 disarankan jika browser tidak membaca codec lain.
+1. Isi **Google Drive video link** pada tab **Video**, lalu buka **Cover → WORK cover** dan klik **Muat video dari Drive**. Video harus memakai **Anyone with the link → Viewer** dan mengizinkan download. Preview dimuat bertahap, tanpa menunggu seluruh file selesai diunduh. Pemilihan frame tetap kamu lakukan sendiri. **Batalkan pemuatan** menghentikan persiapan dan player yang sedang memuat. Jika Drive membatasi akses atau codec tidak didukung, pilih **Video file** dari komputer; MP4 H.264 disarankan.
 2. Geser **Cover time** sampai frame yang diinginkan terlihat. Slider juga bisa digeser dengan tombol panah keyboard.
-3. Klik **Use this frame as cover**. Hanya gambar JPEG maksimal 1600 px pada sisi panjang yang diunggah ke Sanity; file video tetap di komputer dan playback tetap memakai link Drive.
+3. Klik **Use this frame as cover**. Hanya gambar JPEG maksimal 1600 px pada sisi panjang yang diunggah ke Sanity. Player mengambil bagian video melalui permintaan Range; playback website tetap memakai link Drive.
 4. Periksa **Image description**, pilih **Video format** yang sesuai, lalu **Publish**. Menyimpan cover tidak otomatis mempublish project. Upload yang gagal mempertahankan cover sebelumnya.
 
-Cover di grid WORK tetap seragam, terlepas dari format video. Format asli digunakan pada popup. Pemilihan frame langsung dari iframe Drive tidak tersedia pada alur ini.
+Cover di grid WORK tetap seragam, terlepas dari format video. Format asli digunakan pada popup. Form menggunakan player video sendiri agar frame bisa diambil; iframe Drive hanya dipakai untuk pemutaran di website. Mengganti link atau membatalkan pemuatan mempertahankan cover tersimpan.
+
+`npm run studio` menjalankan Studio lokal dan layanan video di `127.0.0.1:3334` sekaligus, dengan kunci signing acak di memori proses. Layanan memeriksa keanggotaan project menggunakan login Sanity yang aktif, lalu menerbitkan tiket streaming khusus satu video dan origin Studio selama 30 menit. Token login dikirim melalui header ke layanan dan Sanity, tidak ke Drive atau URL video. Project ID backend mengikuti `SANITY_STUDIO_PROJECT_ID`. Klik **Muat video dari Drive** kembali bila sesi kedaluwarsa.
+
+Untuk admin online, isi `DRIVE_VIDEO_SIGNING_SECRET` dengan secret acak minimal 32 karakter pada environment Production Vercel, lalu deploy function `api/drive-video.mjs` bersama website dan deploy perubahan Studio setelah pengujian lokal. Secret hanya dipakai backend, tidak boleh memiliki prefix `SANITY_STUDIO_` atau `PUBLIC_`. Endpoint default Studio adalah `https://nr-visual.vercel.app/api/drive-video`; `SANITY_STUDIO_DRIVE_VIDEO_URL` dapat menggantinya saat build Studio. Function meneruskan Range, status 206/416, Content-Range dan pembatalan koneksi; video tidak dibuffer ke memori server. Browser memakai preload metadata dan hanya mengaktifkan simpan frame setelah frame siap. Kecepatan tetap bergantung pada Drive, codec dan posisi metadata dalam file. Perubahan lokal tidak mengaktifkan fitur di admin online dengan sendirinya.
 
 ### Crop WORK dan galeri secara terpisah
 
