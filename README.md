@@ -77,6 +77,10 @@ Deploy admin online memakai base path `/` karena Sanity hosting melayani file da
 
 ## Pilih cover dari frame video
 
+Di tab Video, isi Google Drive video link, lalu buka Cover dan klik **Muat video dari Drive**. Tunggu video selesai dimuat, geser **Cover time** untuk memilih frame sendiri, lalu klik **Use this frame as cover**. **Batalkan pemuatan** menghentikan download. Hanya gambar cover diupload ke Sanity; loading video tidak mengubah cover atau mempublish project. Video harus menggunakan **Anyone with the link → Viewer** dan mengizinkan download. Jika Drive membatasi akses atau browser tidak membaca codec, file lokal tetap tersedia.
+
+Function `api/drive-video.mjs` memeriksa keanggotaan project menggunakan login Sanity, lalu mengambil video dari host download Drive. Token login hanya dikirim melalui header ke layanan dan Sanity, tidak ke Drive atau URL video. Server mengalirkan respons; browser menampung video sementara sebelum pemilihan frame. File besar membutuhkan waktu dan memori lebih banyak. `npm run studio` menjalankan Studio dan layanan lokal di 127.0.0.1:3334. Endpoint admin online default adalah https://nr-visual.vercel.app/api/drive-video; `SANITY_STUDIO_DRIVE_VIDEO_URL` dapat menggantinya saat build Studio. Deploy function ke Vercel sebelum deploy Studio baru.
+
 1. Buka **Projects → project kamu → WORK cover**. Di bawah input gambar biasa, pilih **Video file** dari komputer. Gunakan file yang sama dengan video di Drive; MP4 H.264 disarankan jika browser tidak membaca codec lain.
 2. Geser **Cover time** sampai frame yang diinginkan terlihat. Slider juga bisa digeser dengan tombol panah keyboard.
 3. Klik **Use this frame as cover**. Hanya gambar JPEG maksimal 1600 px pada sisi panjang yang diunggah ke Sanity; file video tetap di komputer dan playback tetap memakai link Drive.

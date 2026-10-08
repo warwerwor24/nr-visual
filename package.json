@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev --host 127.0.0.1",
-    "studio": "node --env-file-if-exists=.env node_modules/sanity/bin/sanity dev --host 127.0.0.1",
+    "studio": "node --env-file-if-exists=.env scripts/studio.mjs",
     "studio:deploy": "node --env-file-if-exists=.env scripts/deploy-studio.mjs",
     "build": "node --env-file-if-exists=.env scripts/build.mjs",
     "build:release": "node --env-file-if-exists=.env scripts/build.mjs --release",
