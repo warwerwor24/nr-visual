@@ -26,11 +26,38 @@ const logo = settings.logo || '/nrvisual-logo-transparent.png';
     </header>
     <main id="main" class="projects-page">
       <div class="projects-heading"><a class="back-link" href="/#work">← Back to featured work</a><h1>ALL PROJECTS</h1></div>
-      <div class="projects-grid">{projects.map((project, index) => <ProjectCard project={project} index={index} demo={demo} />)}</div>
-      {!projects.length && <p class="empty-state">New projects are on the way.</p>}
+      {demo && <p class="sample-notice">Local layout preview with sample projects.</p>}
+      <div class="projects-toolbar">
+        <div class="project-filters" role="group" aria-label="Filter projects by media type" hidden>
+          <button type="button" data-filter="all" aria-pressed="true" aria-controls="projects-grid">All</button>
+          <button type="button" data-filter="photo" aria-pressed="false" aria-controls="projects-grid">Photo</button>
+          <button type="button" data-filter="video" aria-pressed="false" aria-controls="projects-grid">Video</button>
+        </div>
+        <p id="project-count" class="project-count" role="status" aria-live="polite" aria-atomic="true">{projects.length} {projects.length === 1 ? 'project' : 'projects'}</p>
+      </div>
+      <div id="projects-grid" class="projects-grid">{projects.map((project, index) => <ProjectCard project={project} index={index} demo={demo} />)}</div>
+      <p id="projects-empty" class="empty-state" hidden={projects.length > 0}>New projects are on the way.</p>
     </main>
     <footer class="footer"><img class="footer-logo" src={logo} alt={settings.brandName} width="1636" height="310" loading="lazy" /><p>© {new Date().getFullYear()} {settings.brandName}. All rights reserved.</p></footer>
     <ProjectDialog projects={projects} />
+    <script>
+      const filters = document.querySelector<HTMLElement>('.project-filters')!;
+      const buttons = [...filters.querySelectorAll<HTMLButtonElement>('button[data-filter]')];
+      const cards = [...document.querySelectorAll<HTMLButtonElement>('.projects-grid .work-card')];
+      const count = document.querySelector<HTMLElement>('#project-count')!;
+      const empty = document.querySelector<HTMLElement>('#projects-empty')!;
+
+      filters.hidden = false;
+      buttons.forEach(button => button.addEventListener('click', () => {
+        const kind = button.dataset.filter;
+        buttons.forEach(option => option.setAttribute('aria-pressed', String(option === button)));
+        cards.forEach(card => { card.hidden = kind !== 'all' && card.dataset.kind !== kind; });
+        const visible = cards.filter(card => !card.hidden).length;
+        count.textContent = `${visible} ${kind === 'all' ? '' : `${kind} `}${visible === 1 ? 'project' : 'projects'}`;
+        empty.hidden = visible > 0;
+        empty.textContent = kind === 'all' ? 'New projects are on the way.' : `No ${kind} projects yet. Check back soon or select All.`;
+      }));
+    </script>
     <script src="../../scripts/motion.ts"></script>
   </body>
 </html>

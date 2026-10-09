@@ -2,7 +2,7 @@
 import CoverImage from './CoverImage.astro';
 const { project, index = 0, demo = false } = Astro.props;
 ---
-<button class="work-card" data-project={project._id} aria-label={`${project.kind === 'video' ? 'Watch' : 'Open'} ${project.title}${demo ? ', sample project' : ''}`}>
+<button class="work-card" data-project={project._id} data-kind={project.kind} aria-label={`${project.kind === 'video' ? 'Watch' : 'Open'} ${project.title}${demo ? ', sample project' : ''}`}>
   <span class="cover-frame">
     <CoverImage project={project} loading={index < 3 ? 'eager' : 'lazy'} />
     <span class="card-top">{!demo && <span>{project.category}</span>}<span class="card-number">{String(index + 1).padStart(2, '0')}</span></span>
