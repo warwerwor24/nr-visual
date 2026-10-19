@@ -3,6 +3,8 @@ import { pipeline } from 'node:stream/promises';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { driveMedia } from '../src/lib/media.mjs';
 
+const DRIVE_CHUNK = 8 * 1024 * 1024;
+
 export default async function driveVideo(request, response) {
   response.setHeader('Cache-Control', 'no-store');
   response.setHeader('X-Content-Type-Options', 'nosniff');
@@ -54,9 +56,13 @@ export default async function driveVideo(request, response) {
       !timingSafeEqual(signature(expires), Buffer.from(signed, 'hex'))) return fail(401, 'Sesi video kedaluwarsa atau tidak valid. Muat video kembali.');
   } else if (!authorization || !/^Bearer \S+$/.test(authorization) || authorization.length > 4096) return fail(401, 'Login ke Sanity terlebih dahulu.');
   const range = request.headers.range;
+  // Drive treats open ranges (bytes=N-) as a full download and can answer with its "Quota exceeded" page; bounded chunks still return 206.
+  let upstreamRange = `bytes=0-${DRIVE_CHUNK - 1}`;
   if (range) {
     const parts = /^bytes=(\d*)-(\d*)$/.exec(range);
     if (!parts || (!parts[1] && !parts[2]) || parts.slice(1).some(value => value && !Number.isSafeInteger(Number(value))) || (parts[1] && parts[2] && Number(parts[1]) > Number(parts[2]))) return fail(416, 'Rentang video tidak valid.');
+    const last = Number(parts[1]) + DRIVE_CHUNK - 1;
+    upstreamRange = parts[1] ? `bytes=${parts[1]}-${parts[2] ? Math.min(Number(parts[2]), last) : last}` : range;
   }
   const controller = new AbortController();
   const abort = () => controller.abort();
@@ -86,7 +92,7 @@ export default async function driveVideo(request, response) {
     const resourceKey = sharing.searchParams.get('resourcekey');
     if (resourceKey) download.searchParams.set('resourcekey', resourceKey);
     const video = await fetch(download, {
-      headers: { Range: range || 'bytes=0-' }, redirect: 'manual', signal: controller.signal,
+      headers: { Range: upstreamRange }, redirect: 'manual', signal: controller.signal,
     });
     if (video.status === 416) {
       const contentRange = video.headers.get('content-range');

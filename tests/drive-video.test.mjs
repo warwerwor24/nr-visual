@@ -21,7 +21,7 @@ test('Drive service checks project membership, restricts origins and hosts, and 
     const fixture = 'video-fixture';
     const [, from, to] = /^bytes=(\d*)-(\d*)$/.exec(options.headers.Range);
     const start = from ? Number(from) : Math.max(0, fixture.length - Number(to));
-    const end = from && to ? Number(to) : fixture.length - 1;
+    const end = from && to ? Math.min(Number(to), fixture.length - 1) : fixture.length - 1;
     const body = mode === 'html' ? '<html>Download unavailable</html>' : fixture.slice(start, end + 1);
     return new Response(body, {status: 206, headers: {
       'Content-Type': mode === 'html' ? 'text/html' : 'video/mp4',
@@ -62,7 +62,7 @@ test('Drive service checks project membership, restricts origins and hosts, and 
     assert.equal(new URL(download.url).searchParams.get('id'), 'abcdefghijklmnop');
     assert.equal(download.options.headers.Authorization, undefined);
     assert.equal(download.options.redirect, 'manual', 'Untrusted redirect destinations must not be fetched');
-    assert.equal(download.options.headers.Range, 'bytes=0-');
+    assert.equal(download.options.headers.Range, 'bytes=0-8388607', 'Requests without Range ask Drive for a bounded first chunk');
     const before = calls.length;
     const session = await originalFetch(url + '&session=1', {headers});
     assert.equal(session.status, 200);
@@ -71,14 +71,15 @@ test('Drive service checks project membership, restricts origins and hosts, and 
     assert(!ticket.includes('local-test-token'));
     assert.equal(calls.length, before + 1, 'Opening a session checks membership without downloading video');
     const stream = url + '&ticket=' + ticket;
-    for (const range of ['bytes=2-5', 'bytes=5-', 'bytes=-4']) {
+    // Open and oversized ranges are clamped so Drive never sees a whole-file download.
+    for (const [range, upstream] of [['bytes=2-5', 'bytes=2-5'], ['bytes=5-', 'bytes=5-8388612'], ['bytes=0-99999999', 'bytes=0-8388607'], ['bytes=-4', 'bytes=-4']]) {
       const partial = await originalFetch(stream, {headers: {Origin: headers.Origin, Range: range}});
       assert.equal(partial.status, 206);
       assert.equal(partial.headers.get('accept-ranges'), 'bytes');
       assert(partial.headers.get('content-range').startsWith('bytes '));
       assert.equal(partial.headers.get('access-control-allow-origin'), headers.Origin);
       assert.equal((await partial.text()).length, Number(partial.headers.get('content-length')));
-      assert.equal(calls.at(-1).options.headers.Range, range);
+      assert.equal(calls.at(-1).options.headers.Range, upstream);
       assert.equal(calls.at(-1).options.headers.Authorization, undefined);
     }
     assert.equal(calls.slice(before + 1).filter(call => new URL(call.url).hostname === 'api.sanity.io').length, 0, 'Range requests use a signed session rather than repeating Sanity membership checks');
