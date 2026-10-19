@@ -49,7 +49,7 @@ Project ini sudah terhubung. Untuk mulai isi karya, buka [admin online](https://
 2. Salin `.env.example` menjadi `.env`. Isi `SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DATASET`, dan `SITE_URL` dengan domain HTTPS final. Token baca, jika diperlukan, hanya di `SANITY_READ_TOKEN`; jangan pakai awalan `PUBLIC_` atau `SANITY_STUDIO_` untuk token.
 3. Di pengaturan API/CORS Sanity, tambahkan origin Studio lokal yang tercetak di terminal dan origin domain final, dengan credentials untuk login Studio. Beri akses editor hanya kepada akun yang mengelola portofolio.
 4. Jalankan `npm run studio`, buka alamat `/admin/` yang dicetak, lalu login melalui Sanity. Sanity mengelola autentikasi, hak akses, draft, publish, unpublish, dan hapus.
-5. Buat dan publish karya di **Projects**. Isi judul, kategori, deskripsi, sampul, deskripsi alternatif gambar, dan video Drive atau foto. Brand/client, peran, dan tanggal proyek bersifat opsional. Arsip otomatis memuat semua karya terpublikasi, termasuk yang tidak featured. Urutan terbaru memakai tanggal proyek, atau tanggal pembuatan jika kosong. Untuk video, pilih Drive **Anyone with the link → Viewer**, lalu uji link di jendela tanpa login. Jangan gunakan folder Drive.
+5. Buat dan publish video di **Video projects**, atau album foto di **Photo projects**. Kedua menu memfilter dokumen `project` berdasarkan jenisnya; draft yang sudah ada tetap tersimpan. Isi judul, kategori, deskripsi, sampul, deskripsi alternatif gambar, dan video Drive atau foto. Brand/client, peran, dan tanggal proyek bersifat opsional. Arsip otomatis memuat semua karya terpublikasi, termasuk yang tidak featured. Urutan terbaru memakai tanggal proyek, atau tanggal pembuatan jika kosong. Untuk video, pilih Drive **Anyone with the link → Viewer**, lalu uji link di jendela tanpa login. Jangan gunakan folder Drive.
 6. Buka **Website settings**. Isi logo berwarna terang dengan latar transparan, brand, teks, pengalaman, kontak, dan gambar berbagi 1200×630. Nomor WhatsApp memakai kode negara, tanpa angka 0 pertama.
 7. Pilih hingga 9 video di **Featured videos**, lalu sekitar 15 proyek di **Project collage**. Seret untuk mengubah urutan, lalu publish settings.
 8. Isi **Client logos** dengan logo klien asli berlatar transparan. Masukkan nama klien pada deskripsi gambar, seret untuk mengurutkan, lalu publish. Preview lokal memakai delapan logo yang dipilih pemilik; upload file dari `public/client-logos/` jika ingin mempertahankan pilihan itu.
@@ -70,10 +70,23 @@ Deploy admin online memakai base path `/` karena Sanity hosting melayani file da
 
 ## Popup project dan format video
 
-- Di **Projects → Video format**, pilih Landscape 16:9, Portrait 9:16, Square 1:1, atau Portrait 4:5, lalu **Publish**. Video Google Drive menggunakan format pilihan ini; proyek lama tanpa pilihan memakai 16:9.
+- Di **Video projects → Video format**, pilih Landscape 16:9, Portrait 9:16, Square 1:1, atau Portrait 4:5, lalu **Publish**. Video Google Drive menggunakan format pilihan ini; proyek lama tanpa pilihan memakai 16:9.
 - Popup menyesuaikan format video serta ruang layar. Desktop menampilkan cover di sisi kiri, player di tengah, dan deskripsi serta arrow atas/bawah di kanan. HP menampilkan satu baris navigasi cover yang bisa digeser. Arrow, tombol keyboard, dan cover dapat membuka semua project terpublikasi, termasuk yang tidak featured. Focus mode memperbesar player dan menyembunyikan navigasi/deskripsi sementara; tombol yang sama mengembalikan layout.
 - Saat berpindah, player sebelumnya dilepas agar tidak terus memutar. Escape/tombol × menutup dengan animasi dan mengembalikan fokus ke cover asal. Reduced motion tetap didukung.
 - Pemeriksaan browser: `node scripts/check-project-dialog.mjs` dengan preview di port 4322 dan Playwright tersedia melalui `PLAYWRIGHT_MODULE`. Tujuh project uji hanya disisipkan ke respons browser lokal; tidak dibuat di Sanity atau website publik.
+
+## Form project foto
+
+1. Buka **Photo projects**, lalu pilih album yang sudah ada atau buat **Photo project**. Project baru dari menu ini otomatis bertipe Photography; dokumen tetap memakai skema `project` yang sama.
+2. Isi **Info project**: judul, kategori, client, tanggal, peran, dan deskripsi. Kategori foto mencakup produk, event, portrait, dan editorial.
+3. Di **Album foto**, klik **Upload foto sekaligus** untuk memilih beberapa gambar. Foto diupload berurutan berdasarkan nama file melalui API aset Sanity dan ditambahkan ke album lama. Progress dan file yang gagal tampil; upload ulang hanya file yang gagal. Aset Sanity yang sudah ada dapat dipilih melalui **Add item** dan editor gambar native. Maksimal 20 foto; batch yang melebihi sisa slot ditolak sebelum upload, dan album kosong atau lebih dari 20 foto tidak dapat dipublish. Klik thumbnail untuk editor gambar/deskripsi aksesibilitas, dan geser thumbnail untuk mengatur urutan.
+4. **Pilih beberapa foto** membuka mode pilihan thumbnail. Checkbox memilih satu atau beberapa foto. **Pilih semua** dan **Keluarkan foto dari album** memerlukan konfirmasi sebelum mengeluarkan referensi; aset asli dan cover tetap tersimpan. **Selesai memilih** kembali ke grid editor native.
+5. **Folder sumber Google Drive** menyimpan link folder sebagai catatan. Untuk impor, kirim link folder melalui chat Codex. Field ini tidak menjalankan sinkronisasi atau impor otomatis.
+6. Di **Cover**, pilih foto album pada **Foto untuk cover**, lalu **Gunakan foto ini sebagai cover**. Aset digunakan ulang, deskripsi disalin, dan crop lama direset. Periksa framing WORK 16:9; Gallery cover tetap opsional dan dapat memakai gambar yang sama dengan crop 4:5 tersendiri.
+
+Foto asli sekitar 5 MB dapat disimpan di Sanity. Gallery website meminta thumbnail lebar 640 px dan foto besar 2000 px ketika dibuka, dengan format otomatis dan kualitas 85. Ukuran hasil tergantung gambarnya; file asli tidak diganti.
+
+Pemeriksaan terfokus: `node scripts/check-photo-form.mjs`. Tes menguji skema asli, upload aset tiruan, dan interaksi komponen lokal dengan patch tiruan, tanpa perubahan CMS. Pengurutan dan editor gambar tetap memakai komponen native Sanity. Perubahan form online memerlukan deploy Studio setelah pemilik memberi perintah.
 
 ## Pilih cover dari frame video
 

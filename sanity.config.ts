@@ -3,23 +3,41 @@ import { structureTool } from 'sanity/structure';
 import { driveMedia, socialUrl, whatsappUrl } from './src/lib/media.mjs';
 import { VideoCoverInput } from './sanity/VideoCoverInput';
 import { GalleryCoverInput } from './sanity/GalleryCoverInput';
+import { PhotoAlbumInput } from './sanity/PhotoAlbumInput';
 
 const imageFields = [defineField({ name: 'alt', title: 'Image description (accessibility)', type: 'string', validation: rule => rule.required() })];
 const project = defineType({
   name: 'project', title: 'Project', type: 'document',
+  groups: [
+    { name: 'info', title: 'Info project', default: true },
+    { name: 'album', title: 'Album foto', hidden: ({ value }) => value?.kind !== 'photo' },
+    { name: 'video', title: 'Video', hidden: ({ value }) => value?.kind === 'photo' },
+    { name: 'covers', title: 'Cover' },
+  ],
   fields: [
-    defineField({ name: 'title', type: 'string', validation: rule => rule.required().max(80) }),
-    defineField({ name: 'category', type: 'string', options: { list: ['Brand Campaign Video', 'Event Videography', 'Offline & Online Editing', 'Color Grading & VFX', 'Product photography', 'Campaign film', 'Brand launch', 'Event coverage', 'Online course', 'Editorial', 'Creative film'] }, validation: rule => rule.required() }),
-    defineField({ name: 'client', title: 'Brand / client', type: 'string', validation: rule => rule.max(100) }),
-    defineField({ name: 'role', title: 'Your role', description: 'For example: director, editor, cinematographer or colorist.', type: 'string', validation: rule => rule.max(160) }),
-    defineField({ name: 'completedAt', title: 'Project date', description: 'All projects are sorted newest first. Leave blank to use the creation date.', type: 'date' }),
-    defineField({ name: 'description', type: 'text', rows: 3, validation: rule => rule.required().max(1200) }),
-    defineField({ name: 'kind', title: 'Type of project', type: 'string', options: { list: [{ title: 'Video', value: 'video' }, { title: 'Photography', value: 'photo' }], layout: 'radio' }, initialValue: 'video', validation: rule => rule.required() }),
-    defineField({ name: 'cover', title: 'WORK cover', description: 'WORK and all-project cards use 16:9 at every screen size. Open the image editor and check the WORK (16:9) preview. Popup thumbnails also use this image.', type: 'image', options: { hotspot: { previews: [{title: 'WORK (16:9)', aspectRatio: 16 / 9}] } }, components: { input: VideoCoverInput }, fields: imageFields, validation: rule => rule.required().assetRequired() }),
-    defineField({ name: 'galleryCover', title: 'Gallery cover', description: 'Optional separate crop for the yellow gallery (4:5). Use the WORK image, then adjust its Crop/Hotspot here. Leave empty to use the WORK cover.', type: 'image', options: { hotspot: { previews: [{title: 'Yellow gallery', aspectRatio: .8}] } }, components: { input: GalleryCoverInput }, fields: imageFields, validation: rule => rule.assetRequired() }),
-    defineField({ name: 'driveUrl', title: 'Google Drive video link', description: 'Use an HTTPS file sharing link. Set the video to Anyone with the link / Viewer and test without signing in.', type: 'url', hidden: ({ document }) => document?.kind !== 'video', validation: rule => rule.custom((value, context) => context.document?.kind !== 'video' || driveMedia(value) ? true : 'Paste a valid https://drive.google.com/file/d/…/view link.') }),
-    defineField({ name: 'videoFormat', title: 'Video format', description: 'Choose the actual video format; it is not detected from the Drive link. This controls the popup, while WORK covers keep a uniform grid.', type: 'string', initialValue: '16:9', options: { list: [{ title: 'Landscape (16:9)', value: '16:9' }, { title: 'Portrait (9:16)', value: '9:16' }, { title: 'Square (1:1)', value: '1:1' }, { title: 'Portrait (4:5)', value: '4:5' }] }, hidden: ({ document }) => document?.kind !== 'video' }),
-    defineField({ name: 'photos', type: 'array', of: [{ type: 'image', options: { hotspot: true }, fields: imageFields, validation: rule => rule.assetRequired() }], hidden: ({ document }) => document?.kind !== 'photo', validation: rule => rule.custom((value, context) => context.document?.kind !== 'photo' || (Array.isArray(value) && value.length > 0) ? true : 'Add at least one photo.') }),
+    defineField({ name: 'kind', group: 'info', title: 'Type of project', type: 'string', options: { list: [{ title: 'Video', value: 'video' }, { title: 'Photography', value: 'photo' }], layout: 'radio' }, initialValue: 'video', validation: rule => rule.required() }),
+    defineField({ name: 'title', group: 'info', type: 'string', validation: rule => rule.required().max(80) }),
+    defineField({ name: 'category', group: 'info', type: 'string', options: { list: ['Brand Campaign Video', 'Event Videography', 'Offline & Online Editing', 'Color Grading & VFX', 'Product photography', 'Event photography', 'Portrait photography', 'Editorial photography', 'Campaign film', 'Brand launch', 'Event coverage', 'Online course', 'Editorial', 'Creative film'] }, validation: rule => rule.required() }),
+    defineField({ name: 'client', group: 'info', title: 'Brand / client', type: 'string', validation: rule => rule.max(100) }),
+    defineField({ name: 'role', group: 'info', title: 'Your role', description: 'For example: photographer, director, editor, cinematographer or colorist.', type: 'string', validation: rule => rule.max(160) }),
+    defineField({ name: 'completedAt', group: 'info', title: 'Project date', description: 'All projects are sorted newest first. Leave blank to use the creation date.', type: 'date' }),
+    defineField({ name: 'description', group: 'info', type: 'text', rows: 3, validation: rule => rule.required().max(1200) }),
+    defineField({ name: 'photoSourceUrl', group: 'album', title: 'Folder sumber Google Drive', description: 'Simpan link folder berisi foto pilihan. Impor dari Drive dijalankan lewat chat Codex; link ini tidak otomatis mengupload foto.', type: 'url', hidden: ({ document }) => document?.kind !== 'photo', validation: rule => rule.custom(value => !value || /^https:\/\/drive\.google\.com\/drive\/(?:u\/\d+\/)?folders\/[A-Za-z0-9_-]+\/?(?:[?#].*)?$/.test(value) ? true : 'Gunakan link folder https://drive.google.com/drive/folders/…') }),
+    defineField({ name: 'photos', group: 'album', title: 'Album foto', description: 'Maksimal 20 foto. Upload sekaligus, geser untuk mengurutkan, lalu isi deskripsi setiap foto.', type: 'array', options: { layout: 'grid' }, components: { input: PhotoAlbumInput }, of: [{ type: 'image', options: { hotspot: true }, fields: imageFields, validation: rule => rule.assetRequired() }], hidden: ({ document }) => document?.kind !== 'photo', validation: rule => rule.max(20).custom((value, context) => context.document?.kind !== 'photo' || (Array.isArray(value) && value.length > 0) ? true : 'Tambahkan minimal satu foto.') }),
+    defineField({ name: 'cover', group: 'covers', title: 'WORK cover', description: 'WORK and all-project cards use 16:9 at every screen size. Open the image editor and check the WORK (16:9) preview. Popup thumbnails also use this image.', type: 'image', options: { hotspot: { previews: [{title: 'WORK (16:9)', aspectRatio: 16 / 9}] } }, components: { input: VideoCoverInput }, fields: imageFields, validation: rule => rule.required().assetRequired() }),
+    defineField({ name: 'coverRecommendations', group: 'covers', title: 'Kandidat cover tersimpan', type: 'object', hidden: true, readOnly: true, fields: [
+      defineField({ name: 'version', type: 'number' }),
+      defineField({ name: 'sourceUrl', type: 'url' }),
+      defineField({ name: 'duration', type: 'number' }),
+      defineField({ name: 'generatedAt', type: 'datetime' }),
+      defineField({ name: 'frames', type: 'array', validation: rule => rule.max(6), of: [{ name: 'coverRecommendationFrame', type: 'object', fields: [
+        defineField({ name: 'time', type: 'number' }),
+        defineField({ name: 'image', type: 'image', options: { hotspot: true }, validation: rule => rule.assetRequired() }),
+      ] }] }),
+    ] }),
+    defineField({ name: 'galleryCover', group: 'covers', title: 'Gallery cover', description: 'Optional separate crop for the yellow gallery (4:5). Use the WORK image, then adjust its Crop/Hotspot here. Leave empty to use the WORK cover.', type: 'image', options: { hotspot: { previews: [{title: 'Yellow gallery', aspectRatio: .8}] } }, components: { input: GalleryCoverInput }, fields: imageFields, validation: rule => rule.assetRequired() }),
+    defineField({ name: 'driveUrl', group: 'video', title: 'Google Drive video link', description: 'Use an HTTPS file sharing link. Set the video to Anyone with the link / Viewer and test without signing in.', type: 'url', hidden: ({ document }) => document?.kind !== 'video', validation: rule => rule.custom((value, context) => context.document?.kind !== 'video' || driveMedia(value) ? true : 'Paste a valid https://drive.google.com/file/d/…/view link.') }),
+    defineField({ name: 'videoFormat', group: 'video', title: 'Video format', description: 'Choose the actual video format; it is not detected from the Drive link. This controls the popup, while WORK covers keep a uniform grid.', type: 'string', initialValue: '16:9', options: { list: [{ title: 'Landscape (16:9)', value: '16:9' }, { title: 'Portrait (9:16)', value: '9:16' }, { title: 'Square (1:1)', value: '1:1' }, { title: 'Portrait (4:5)', value: '4:5' }] }, hidden: ({ document }) => document?.kind !== 'video' }),
   ],
   preview: { select: { title: 'title', subtitle: 'category', media: 'cover' } },
 });
@@ -48,8 +66,9 @@ export default defineConfig({
   dataset: process.env.SANITY_STUDIO_DATASET || 'production',
   plugins: [structureTool({ structure: S => S.list().title('Portfolio').items([
     S.listItem().title('Website settings').id('siteSettings').child(S.document().schemaType('siteSettings').documentId('siteSettings')),
-    S.documentTypeListItem('project').title('Projects'),
+    S.listItem().title('Photo projects').id('photoProjects').child(S.documentList().title('Photo projects').schemaType('project').filter('_type == "project" && kind == "photo"').initialValueTemplates([S.initialValueTemplateItem('photo-project')])),
+    S.listItem().title('Video projects').id('project').child(S.documentList().title('Video projects').schemaType('project').filter('_type == "project" && kind == "video"').initialValueTemplates([S.initialValueTemplateItem('project')])),
   ]) })],
-  schema: { types: [project, settings], templates: templates => templates.filter(template => template.schemaType !== 'siteSettings') },
+  schema: { types: [project, settings], templates: templates => [...templates.filter(template => template.schemaType !== 'siteSettings'), { id: 'photo-project', title: 'Photo project', schemaType: 'project', value: { kind: 'photo' } }] },
   document: { actions: (actions, context) => context.schemaType === 'siteSettings' ? actions.filter(action => !['delete', 'duplicate', 'unpublish'].includes(action.action || '')) : actions },
 });

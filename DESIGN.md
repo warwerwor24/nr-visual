@@ -1,5 +1,13 @@
 # NR Visual
 
+## Studio cover selection
+
+Reading this as a video-cover editing tool for the portfolio owner inside the existing Sanity Studio. ENERGY 1 / RHYTHM 1 / MOTION 1.
+
+Sanity's native Card, Stack, Text and Button styles preserve the editor's light/dark themes and focus states. Source controls precede a large video preview, the native timeline and the save action, matching the editing sequence. The video preview is the focal point, and the active buttons provide the existing Studio accent. No animation or new visual assets are added. Loading, cancellation and errors use the same editor feedback pattern, with 44px controls for touch and native keyboard support.
+
+Drive preview uses native byte-range loading so the same timeline can request a distant frame without waiting for a full browser download. Seeking shows a short loading message and disables saving until the frame is ready; the existing layout and both themes remain intact.
+
 Direction supplied by the user: fullscreen portrait hero following the supplied Creflow screenshot, black with yellow #FAEF59 and blue #5FCCF4, transparent NR Visual logo in header, hero and compact footer, 9 featured videos, floating 15-image collage with titles only, scroll fades and eased scrolling, client logos above 8 years experience, supplied contact links in the lower section, copyright below the footer logo. No header WhatsApp or hero contact card.
 
 Reading this as a personal photo/film portfolio for varied clients, in an editorial production-studio style. ENERGY 3 / RHYTHM 3 / MOTION 2.
@@ -18,7 +26,7 @@ Reading this as a personal photo/film portfolio for varied clients, in an editor
 - WORK and archive covers use 16:9 at every breakpoint so editor preview and website framing agree. The featured WORK grid keeps three desktop columns (nine featured projects form three rows), two tablet columns and one mobile column. Sanity's image builder receives both dimensions and applies the editor crop/hotspot directly; the gallery keeps its separate 4:5 framing.
 - Large editorial headings alternate with compact service rows and a quiet contact area, matching the user's requested section hierarchy.
 - Small play triangles communicate video. Project cards use a light fade at the top for category and number labels; localized text shadows keep white titles readable while the bottom of the image remains unobscured, as requested by the owner.
-- All Projects uses four columns from 1280px, two below that, and one at 600px or narrower, following the owner's selected layout preview. The desktop threshold avoids squeezing long titles into tiny text on smaller screens. Project titles use one compact, lighter shadow instead of a broad second layer to keep covers visually clear. All / Photo / Video filters use native buttons and the existing grid, with counts, empty states, and no-JavaScript fallback.
+- All Projects uses four columns from 1280px, two below that, and one at 600px or narrower, following the owner's selected layout preview. The desktop threshold avoids squeezing long titles into tiny text on smaller screens. Project titles use one compact, lighter shadow instead of a broad second layer to keep covers visually clear.
 - Sample imagery is labeled in the preview and expanded views. No client, award, or testimonial claims are invented.
 - Eight owner-selected brand logos replace the dummy names above experience. KlikFilm is excluded; Kokola and London Taxi are separate. Source provenance is recorded privately in work/client-logo-sources.md. BBYU uses the original video end card, framed in CSS. Colors and proportions remain intact. The CMS logo list still supports replacement and reordering.
 - Logo rows use four columns above 1000px and two below. Native backgrounds retain each logo's contrast. Padded source assets are framed with CSS to balance visible size. A square transparent nr-only PNG supplies the favicon, while the full wordmark stays on the page.
