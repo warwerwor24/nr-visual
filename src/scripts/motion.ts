@@ -58,7 +58,17 @@ function easeScroll(time: number) {
   } else scrollFrame = requestAnimationFrame(easeScroll);
 }
 
+// Trackpads send small, fractional or sideways deltas; once seen, leave scrolling native for the rest of the gesture.
+let trackpadUntil = 0;
+function isMouseWheel(event: WheelEvent) {
+  if (event.deltaMode !== 0) return true;
+  const trackpadLike = event.deltaX !== 0 || !Number.isInteger(event.deltaY) || Math.abs(event.deltaY) < 50;
+  if (trackpadLike) trackpadUntil = event.timeStamp + 400;
+  return !trackpadLike && event.timeStamp > trackpadUntil;
+}
+
 window.addEventListener('wheel', event => {
+  if (!isMouseWheel(event)) return stopScroll();
   if (reducedMotion.matches || !finePointer.matches || event.defaultPrevented || event.ctrlKey || event.metaKey || event.shiftKey || Math.abs(event.deltaX) > Math.abs(event.deltaY) || document.querySelector('dialog[open]')) return;
   let node = event.target instanceof Element ? event.target : null;
   while (node && node !== document.body && node !== document.documentElement) {

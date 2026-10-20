@@ -4,5 +4,7 @@ const { project, variant = 'work', width = 720, height = 405, loading = 'lazy' }
 const gallery = variant === 'gallery' && project.galleryCover?.asset?._ref && project.galleryCover.url ? project.galleryCover : null;
 const alt = Astro.props.alt ?? gallery?.alt ?? project.alt;
 const cover = coverPresentation(project, Math.max(width, 960), variant, width / height);
+const lqip = gallery ? gallery.lqip : project.lqip;
 ---
-<img src={cover.src} alt={alt} width={width} height={height} loading={loading} decoding="async" style={`object-position:${cover.position}`} />
+<span class="lqip" style={lqip ? `background-image:url(${lqip})` : undefined}><img src={cover.src} alt={alt} width={width} height={height} loading={loading} decoding="async" data-fade style={`object-position:${cover.position}`} /></span>
+<script src="../scripts/image-fade.ts"></script>

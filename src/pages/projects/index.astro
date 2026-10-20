@@ -48,14 +48,20 @@ const logo = settings.logo || '/nrvisual-logo-transparent.png';
       const empty = document.querySelector<HTMLElement>('#projects-empty')!;
 
       filters.hidden = false;
-      buttons.forEach(button => button.addEventListener('click', () => {
-        const kind = button.dataset.filter;
-        buttons.forEach(option => option.setAttribute('aria-pressed', String(option === button)));
+      function applyFilter(kind: string | undefined) {
         cards.forEach(card => { card.hidden = kind !== 'all' && card.dataset.kind !== kind; });
         const visible = cards.filter(card => !card.hidden).length;
         count.textContent = `${visible} ${kind === 'all' ? '' : `${kind} `}${visible === 1 ? 'project' : 'projects'}`;
         empty.hidden = visible > 0;
         empty.textContent = kind === 'all' ? 'New projects are on the way.' : `No ${kind} projects yet. Check back soon or select All.`;
+      }
+      buttons.forEach(button => button.addEventListener('click', () => {
+        const kind = button.dataset.filter;
+        buttons.forEach(option => option.setAttribute('aria-pressed', String(option === button)));
+        if (!('startViewTransition' in document) || matchMedia('(prefers-reduced-motion: reduce)').matches) return applyFilter(kind);
+        // Names exist only during the transition so cards never pair up with homepage cards across pages.
+        cards.forEach((card, index) => { card.style.viewTransitionName = `project-card-${index}`; });
+        document.startViewTransition(() => applyFilter(kind)).finished.finally(() => cards.forEach(card => { card.style.viewTransitionName = ''; }));
       }));
     </script>
     <script src="../../scripts/motion.ts"></script>

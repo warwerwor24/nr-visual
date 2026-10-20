@@ -1,3 +1,8 @@
+// Motion values come from the CSS tokens so JS animations match the stylesheet.
+const cssToken = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const motion = (name: string) => parseFloat(cssToken(name)) || 0;
+const motionEase = () => cssToken('--ease') || 'ease-out';
+const canMorph = () => 'startViewTransition' in document && !matchMedia('(prefers-reduced-motion: reduce)').matches;
 const dialog = document.querySelector<HTMLDialogElement>('#project-dialog')!;
 const panelContent = dialog.querySelector<HTMLDivElement>('.dialog-content')!;
 const media = document.querySelector<HTMLDivElement>('#dialog-media')!;
@@ -74,7 +79,7 @@ function showPhoto(index: number) {
     if (motion) {
       photoAnimations = [...photoViewer.querySelectorAll<HTMLElement>('.photo-view-header, .photo-peek, .photo-step, .photo-filmstrip, .photo-view-status')].map(element => element.animate([
         { opacity: 0 }, { opacity: getComputedStyle(element).opacity },
-      ], { duration: 320, easing: 'ease-out', fill: 'both' }));
+      ], { duration: motion('--dur-base'), easing: motionEase(), fill: 'both' }));
       photoAnimations.forEach(animation => animation.finished.then(() => animation.cancel()).catch(() => {}));
     }
   }
@@ -94,7 +99,7 @@ function showPhoto(index: number) {
     const animation = photoImage.animate([
       { transform, transformOrigin: 'top left', opacity: .6 },
       { transform: 'none', transformOrigin: 'top left', opacity: 1 },
-    ], { duration: 460, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'both' });
+    ], { duration: motion('--dur-slow'), easing: motionEase(), fill: 'both' });
     photoAnimations.push(animation);
     animation.finished.then(() => animation.cancel()).catch(() => {});
   };
@@ -207,7 +212,7 @@ function showProject(index: number, switching = false) {
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
       contentAnimations = contentItems.map(element => element.animate([
         { opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'translateY(0)' },
-      ], { duration: 220, easing: 'ease-out', fill: 'both' }));
+      ], { duration: motion('--dur-fast'), easing: motionEase(), fill: 'both' }));
       contentAnimations.forEach(animation => animation.finished.then(() => animation.cancel()).catch(() => {}));
     }
   }
@@ -219,13 +224,27 @@ document.querySelectorAll<HTMLButtonElement>('button[data-project]').forEach(but
     if (index < 0) return;
     const card = button.getBoundingClientRect();
     trigger = button;
+    const isAlbum = templates[index].dataset.kind === 'photo';
+    if (!isAlbum && canMorph()) {
+      // The card morphs into the dialog panel; the old transform animation stays as the fallback.
+      button.style.viewTransitionName = 'project-media';
+      const transition = document.startViewTransition(() => {
+        button.style.viewTransitionName = '';
+        showProject(index);
+        dialog.showModal();
+        thumbnails[index]?.scrollIntoView({ block: 'nearest', inline: 'start', behavior: 'instant' });
+        shell.style.viewTransitionName = 'project-media';
+      });
+      transition.finished.finally(() => { shell.style.viewTransitionName = ''; });
+      return;
+    }
     showProject(index);
     dialog.showModal();
     if (dialog.classList.contains('is-photo-album')) {
       if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
         contentAnimations = [...media.querySelectorAll<HTMLElement>('.photo-tile')].map(tile => tile.animate([
           { opacity: 0 }, { opacity: 1 },
-        ], { duration: 420, delay: Math.random() * 320, easing: 'ease-out', fill: 'both' }));
+        ], { duration: motion('--dur-base'), delay: Math.random() * motion('--dur-base'), easing: motionEase(), fill: 'both' }));
         contentAnimations.forEach(animation => animation.finished.then(() => animation.cancel()).catch(() => {}));
       }
       return;
@@ -240,7 +259,7 @@ document.querySelectorAll<HTMLButtonElement>('button[data-project]').forEach(but
       contentAnimations = contentItems.map((element, index) => element.animate([
         { opacity: 0, transform: 'translateY(10px)' },
         { opacity: 1, transform: 'translateY(0)' },
-      ], { duration: 220, delay: 440 + index * 60, easing: 'cubic-bezier(.16, 1, .3, 1)', fill: 'both' }));
+      ], { duration: motion('--dur-fast'), delay: motion('--dur-base') + index * 60, easing: motionEase(), fill: 'both' }));
       contentAnimations.forEach(animation => animation.finished.then(() => animation.cancel()).catch(() => {}));
     }
   });
@@ -285,6 +304,19 @@ function clearMedia() {
 async function closeProject() {
   if (!dialog.open || dialog.classList.contains('is-closing')) return;
   focusAnimations.forEach(animation => animation.cancel());
+  const target = trigger;
+  if (target?.isConnected && !dialog.classList.contains('is-photo-album') && canMorph()) {
+    dialog.classList.add('is-closing');
+    shell.style.viewTransitionName = 'project-media';
+    const transition = document.startViewTransition(() => {
+      shell.style.viewTransitionName = '';
+      dialog.close();
+      target.style.viewTransitionName = 'project-media';
+    });
+    await transition.finished.catch(() => {});
+    target.style.viewTransitionName = '';
+    return;
+  }
   const current = getComputedStyle(panelContent);
   const from = { transform: current.transform, opacity: current.opacity };
   dialog.classList.remove('is-opening');
@@ -297,11 +329,11 @@ async function closeProject() {
     contentAnimations.forEach(animation => animation.cancel());
     contentAnimations = contentItems.map((element, index) => element.animate([
       contentFrom[index], { opacity: 0, transform: 'translateY(6px)' },
-    ], { duration: 120, easing: 'ease-in', fill: 'forwards' }));
+    ], { duration: motion('--dur-fast'), easing: motionEase(), fill: 'forwards' }));
     const animation = panelContent.animate([
       from,
       dialog.classList.contains('is-photo-album') ? { opacity: 0 } : { transform: 'translate(var(--open-x), var(--open-y)) scale(var(--open-scale))', opacity: 0 },
-    ], { duration: 280, delay: 120, easing: 'cubic-bezier(.4, 0, .8, .4)', fill: 'forwards' });
+    ], { duration: motion('--dur-base'), delay: motion('--dur-fast'), easing: motionEase(), fill: 'forwards' });
     await animation.finished.catch(() => {});
     dialog.close();
     animation.cancel();
@@ -322,7 +354,7 @@ focusButton.addEventListener('click', async () => {
     if (motion && focused) {
       focusAnimations = visibleExtras.map(element => element.animate([
         { opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(6px)' },
-      ], { duration: 140, easing: 'ease-in', fill: 'forwards' }));
+      ], { duration: motion('--dur-fast'), easing: motionEase(), fill: 'forwards' }));
       await Promise.all(focusAnimations.map(animation => animation.finished.catch(() => {})));
       if (!dialog.open || dialog.classList.contains('is-closing')) return;
     }
@@ -335,11 +367,11 @@ focusButton.addEventListener('click', async () => {
       const transform = `translate(${before.left - after.left}px, ${before.top - after.top}px) scale(${before.width / after.width}, ${before.height / after.height})`;
       focusAnimations.push(shell.animate([
         { transform, transformOrigin: 'top left' }, { transform: 'none', transformOrigin: 'top left' },
-      ], { duration: 320, easing: 'cubic-bezier(.16, 1, .3, 1)', fill: 'both' }));
+      ], { duration: motion('--dur-base'), easing: motionEase(), fill: 'both' }));
       if (!focused) {
         focusAnimations.push(...focusExtras.filter(element => element.getClientRects().length).map(element => element.animate([
           { opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'translateY(0)' },
-        ], { duration: 220, delay: 100, easing: 'cubic-bezier(.16, 1, .3, 1)', fill: 'both' })));
+        ], { duration: motion('--dur-fast'), delay: 100, easing: motionEase(), fill: 'both' })));
       }
       await Promise.all(focusAnimations.map(animation => animation.finished.catch(() => {})));
     }
