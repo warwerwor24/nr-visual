@@ -1,6 +1,7 @@
 // Motion values come from the CSS tokens so JS animations match the stylesheet.
 const cssToken = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-const motion = (name: string) => parseFloat(cssToken(name)) || 0;
+// The minifier may rewrite 360ms as .36s, so honour the unit.
+const motion = (name: string) => { const value = cssToken(name); return (parseFloat(value) || 0) * (/\dms$/.test(value) ? 1 : /s$/.test(value) ? 1000 : 1); };
 const motionEase = () => cssToken('--ease') || 'ease-out';
 const canMorph = () => 'startViewTransition' in document && !matchMedia('(prefers-reduced-motion: reduce)').matches;
 const dialog = document.querySelector<HTMLDialogElement>('#project-dialog')!;
