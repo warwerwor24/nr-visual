@@ -26,7 +26,7 @@ const contactPhoto = settings.contactPhoto?.url ? settings.contactPhoto : { url:
 const shareImage = new URL(poster, Astro.site || Astro.url).href;
 // Empty slots are topped up with the newest other projects so both layouts always look complete.
 const fill = (picked, count, pool) => [...picked, ...pool.filter(project => !picked.some(item => item._id === project._id))].slice(0, count);
-const featured = fill(highlights, 10, projects.filter(project => project.kind === 'video'));
+const featured = fill(highlights, 11, projects.filter(project => project.kind === 'video'));
 const floating = fill(collage, 8, projects);
 const all = [...new Map([...projects, ...featured, ...floating].map(project => [project._id, project])).values()];
 // Titles match the Sanity project categories, so each row opens the archive filtered to it.

@@ -22,7 +22,7 @@ export async function loadContent(env) {
   if (!response.ok) throw new Error(`Sanity could not be read (${response.status}). Existing deployment must be kept.`);
   const { result } = await response.json();
   if (!result) throw new Error('Publish the Website settings document in Sanity first.');
-  const highlights = publishedProjects(result.highlights || [], true).slice(0, 10);
+  const highlights = publishedProjects(result.highlights || [], true).slice(0, 11);
   const collage = publishedProjects(result.collage || []);
   const projects = publishedProjects(result.projects || []);
   for (const item of publishedProjects([...highlights, ...collage, ...projects])) {

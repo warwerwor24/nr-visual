@@ -255,23 +255,23 @@ dialog.is-photo-view{padding:0;background:transparent;overflow:hidden}
 .collection{display:flex;align-items:center;min-height:100svh;padding:0 4%;background:var(--accent);color:var(--ink)}
 .collection button:focus-visible{outline-color:var(--ink)}
 .collage-stage{display:grid;place-items:center;width:100%;min-height:100svh;padding:0}
-.collage-stage h2{width:auto;margin:0;font-size:clamp(56px,9.4vw,184px);line-height:.88;color:var(--ink);text-shadow:none}
+.collage-stage h2{width:auto;margin:0;font-size:clamp(56px,12vw,240px);line-height:.88;color:var(--ink);text-shadow:none}
 .collage-card{background:var(--surface);transform:none}
 .collage-card img{aspect-ratio:auto;height:auto}
 .collage-card{box-shadow:0 12px 32px #11120f40}
 @media(min-width:601px){
   /* Cards are sized by height (portrait) or width (landscape) so every cover shows whole; the centre stays clear for the tagline. */
   .collage-card,.collage-card:nth-child(n+16){width:auto}
-  .collage-card img{width:auto;max-width:none;height:min(26svh,300px)}
-  .collage-card.is-landscape img{width:clamp(150px,17vw,320px);height:auto}
-  .collage-card.position-0{inset:7% auto auto 3%}
-  .collage-card.position-1{inset:9% auto auto 20%}
-  .collage-card.position-2{inset:6% 20% auto auto}
-  .collage-card.position-3{inset:8% 3% auto auto}
-  .collage-card.position-4{inset:40% auto auto 2%}
-  .collage-card.position-5{inset:42% 2% auto auto}
-  .collage-card.position-6{inset:auto auto 5% 18%}
-  .collage-card.position-7{inset:auto 12% 5% auto}
+  .collage-card img{width:auto;max-width:none;height:min(34svh,400px)}
+  .collage-card.is-landscape img{width:clamp(160px,18vw,400px);height:auto}
+  .collage-card.position-0{inset:8% auto auto 3%}
+  .collage-card.position-1{inset:8% auto auto 17%}
+  .collage-card.position-2{inset:7% 22% auto auto}
+  .collage-card.position-3{inset:7% 1% auto auto}
+  .collage-card.position-4{inset:50% auto auto 2%}
+  .collage-card.position-5{inset:40% 3% auto auto}
+  .collage-card.position-6{inset:auto auto 3% 16%}
+  .collage-card.position-7{inset:auto 10% 4% auto}
 }
 
 .service-list{list-style:none;margin:0;padding:0}
@@ -356,6 +356,12 @@ dialog.is-photo-view{padding:0;background:transparent;overflow:hidden}
   .clients .client-logos{flex:1;min-height:0;grid-auto-rows:minmax(0,1fr)}
   .client-logos li{min-height:0}
   .client-logos img{height:min(140px,12svh)}
+}
+/* Four columns: the heading takes one cell, so 11 featured projects fill a 4 x 3 grid. */
+@media(min-width:1001px){
+  /* The heading grows until it fills its cell (width or height, whichever runs out first); the link sits on the cell's bottom edge. */
+  .work-intro{grid-column:span 1;container-type:size;justify-content:space-between;gap:8px}
+  #work-title{font-size:min(27.5cqw,calc((100cqh - 56px) / 1.84));line-height:.92}
 }
 
 /* All projects: fullscreen 16:9 grid in grayscale. The hovered or focused tile shows its color and its own caption. */
