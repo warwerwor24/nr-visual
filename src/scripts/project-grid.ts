@@ -1,35 +1,47 @@
 const grid = document.querySelector<HTMLElement>('#projects-grid')!;
-const filters = document.querySelector<HTMLElement>('.project-filters')!;
-const buttons = [...filters.querySelectorAll<HTMLButtonElement>('button[data-filter]')];
+const pill = document.querySelector<HTMLElement>('.filter-pill')!;
+const buttons = [...pill.querySelectorAll<HTMLButtonElement>('button[data-filter]')];
+const menus = [...pill.querySelectorAll<HTMLElement>('.kind-menu')];
+const subButtons = [...pill.querySelectorAll<HTMLButtonElement>('button[data-sub]')];
 const chip = document.querySelector<HTMLButtonElement>('.category-chip')!;
-const subfilters = document.querySelector<HTMLElement>('.project-subfilters')!;
-const subButtons = [...subfilters.querySelectorAll<HTMLButtonElement>('button[data-sub]')];
 const cards = [...grid.querySelectorAll<HTMLButtonElement>('.project-tile')];
+const searchBox = pill.querySelector<HTMLElement>('.search-box')!;
+const searchToggle = pill.querySelector<HTMLButtonElement>('.search-toggle')!;
+const search = document.querySelector<HTMLInputElement>('#project-search')!;
+const clientTitles: Record<string, string> = JSON.parse(grid.dataset.clientTitles || '{}');
 const count = document.querySelector<HTMLElement>('#project-count')!;
 const empty = document.querySelector<HTMLElement>('#projects-empty')!;
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+const touch = matchMedia('(hover: none)');
 
-let kind = 'all';
-let category = new URLSearchParams(location.search).get('category');
+// No type is chosen at first, so the archive opens on every project.
+let kind: string | null = null;
+const params = new URLSearchParams(location.search);
+let category = params.get('category');
+let client = params.get('client');
+let terms: string[] = [];
 let sub = 'all';
 let busy = false;
 
 function applyFilter() {
-  cards.forEach(card => { card.hidden = (kind !== 'all' && card.dataset.kind !== kind) || (!!category && card.dataset.category !== category) || (sub !== 'all' && !card.dataset.categories?.split(' ').includes(sub)); });
-  subButtons.forEach(option => {
-    option.hidden = option.dataset.sub !== 'all' && option.dataset.kind !== kind;
-    option.setAttribute('aria-pressed', String(!option.hidden && option.dataset.sub === sub));
+  cards.forEach(card => {
+    card.hidden = (!!kind && card.dataset.kind !== kind)
+      || (!!category && card.dataset.category !== category)
+      || (!!client && !card.dataset.clients?.split(' ').includes(client))
+      || (sub !== 'all' && !card.dataset.categories?.split(' ').includes(sub))
+      || !terms.every(term => card.dataset.search?.includes(term));
   });
-  // Only offer chips when the chosen type has more than one way to narrow it.
-  subfilters.hidden = kind === 'all' || subButtons.filter(option => !option.hidden).length < 2;
+  buttons.forEach(option => option.setAttribute('aria-pressed', String(option.dataset.filter === kind)));
+  subButtons.forEach(option => option.setAttribute('aria-pressed', String(option.dataset.kind === kind && option.dataset.sub === sub)));
   const visible = cards.filter(card => !card.hidden).length;
-  const title = subButtons.find(option => option.dataset.kind === kind && option.dataset.sub === sub)?.dataset.title;
-  const label = [category, title, kind === 'all' ? '' : kind].filter(Boolean).join(' ');
-  count.textContent = `${visible} ${label ? `${label} ` : ''}${visible === 1 ? 'project' : 'projects'}`;
+  const title = kind ? subButtons.find(option => option.dataset.kind === kind && option.dataset.sub === sub)?.dataset.title : '';
+  const clientName = client ? clientTitles[client] ?? client : '';
+  const label = [category, clientName, title].filter(Boolean).join(' · ');
+  count.textContent = `${visible} ${visible === 1 ? 'project' : 'projects'}${label ? ` · ${label}` : ''}`;
   empty.hidden = visible > 0;
-  empty.textContent = label ? `No ${label} projects yet. Check back soon or show all projects.` : 'New projects are on the way.';
-  chip.hidden = !category;
-  chip.querySelector('.category-name')!.textContent = category ?? '';
+  empty.textContent = terms.length ? `No projects match “${search.value.trim()}”.` : label ? `No ${label} projects yet. Check back soon or show all projects.` : 'New projects are on the way.';
+  chip.hidden = !label;
+  chip.querySelector('.category-name')!.textContent = label;
 }
 
 // Columns travel as one strip: odd columns from above, even columns from below, 50 ms apart.
@@ -72,14 +84,74 @@ async function update(change: () => void) {
   busy = false;
 }
 
-buttons.forEach(button => button.addEventListener('click', () => update(() => {
-  kind = button.dataset.filter!;
-  sub = 'all';
-  buttons.forEach(option => option.setAttribute('aria-pressed', String(option === button)));
-})));
-subButtons.forEach(button => button.addEventListener('click', () => update(() => { sub = button.dataset.sub!; })));
+function closeMenus(except?: Element | null) {
+  menus.forEach(menu => {
+    if (menu === except) return;
+    menu.classList.remove('is-open');
+    menu.querySelector('[data-filter]')!.setAttribute('aria-expanded', 'false');
+  });
+}
+function choose(nextKind: string, nextSub: string) {
+  closeMenus();
+  if (nextKind === kind && nextSub === sub) return;
+  update(() => { kind = nextKind; sub = nextSub; });
+}
+
+// Hover opens a type's dropdown (CSS); a click picks every project of that type.
+// Touch screens have no hover, so the first tap opens the dropdown instead.
+buttons.forEach(button => button.addEventListener('click', () => {
+  const menu = button.closest('.kind-menu')!;
+  if (touch.matches && !menu.classList.contains('is-open')) {
+    closeMenus(menu);
+    menu.classList.add('is-open');
+    button.setAttribute('aria-expanded', 'true');
+    return;
+  }
+  choose(button.dataset.filter!, 'all');
+}));
+menus.forEach(menu => {
+  const button = menu.querySelector<HTMLButtonElement>('[data-filter]')!;
+  menu.addEventListener('pointerenter', () => { if (!touch.matches) button.setAttribute('aria-expanded', 'true'); });
+  menu.addEventListener('pointerleave', () => { if (!touch.matches) button.setAttribute('aria-expanded', 'false'); });
+  menu.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    menu.classList.add('is-dismissed');
+    button.focus();
+  });
+  menu.addEventListener('focusout', event => { if (!menu.contains(event.relatedTarget as Node)) menu.classList.remove('is-dismissed'); });
+  menu.addEventListener('pointerleave', () => menu.classList.remove('is-dismissed'));
+});
+subButtons.forEach(button => button.addEventListener('click', () => choose(button.dataset.kind!, button.dataset.sub!)));
+document.addEventListener('click', event => { if (!(event.target as Element).closest('.kind-menu')) closeMenus(); });
+
+// The search icon opens the field inside the pill; an empty field closes again when it loses focus.
+function setSearch(open: boolean) {
+  searchBox.classList.toggle('is-open', open);
+  searchToggle.setAttribute('aria-expanded', String(open));
+  search.tabIndex = open ? 0 : -1;
+}
+searchToggle.addEventListener('click', () => {
+  setSearch(true);
+  search.focus();
+});
+search.addEventListener('blur', () => { if (!search.value) setSearch(false); });
+search.addEventListener('keydown', event => {
+  if (event.key !== 'Escape') return;
+  search.value = '';
+  search.dispatchEvent(new Event('input'));
+  searchToggle.focus();
+});
+// Typing filters in place; the column slide is kept for the buttons so every keystroke does not replay it.
+search.addEventListener('input', () => {
+  terms = search.value.toLowerCase().split(/\s+/).filter(Boolean);
+  applyFilter();
+  queueParallax();
+});
 chip.addEventListener('click', () => update(() => {
+  kind = null;
+  sub = 'all';
   category = null;
+  client = null;
   history.replaceState(null, '', location.pathname);
 }));
 
@@ -106,7 +178,7 @@ function queueParallax() {
 window.addEventListener('scroll', queueParallax, { passive: true });
 window.addEventListener('resize', queueParallax);
 
-filters.hidden = false;
+pill.hidden = false;
 applyFilter();
 updateParallax();
 if (!reducedMotion.matches) {

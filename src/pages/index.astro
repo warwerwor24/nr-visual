@@ -5,6 +5,7 @@ import { whatsappUrl } from '../lib/media.mjs';
 import ProjectCard from '../components/ProjectCard.astro';
 import ProjectDialog from '../components/ProjectDialog.astro';
 import CoverImage from '../components/CoverImage.astro';
+import { clientMatches, clientSlug } from '../lib/clients.mjs';
 const { demo, settings, highlights, collage, projects } = await loadContent({ ...import.meta.env, ...process.env });
 const logo = settings.logo || '/nrvisual-logo-transparent.png';
 const whatsapp = settings.whatsapp || whatsappUrl('628176383770');
@@ -20,7 +21,9 @@ const portfolioBrands = [
   { alt: 'Kokola', url: '/client-logos/kokola.png' },
   { alt: 'London Taxi', url: '/client-logos/london-taxi.png', tone: 'badge' },
 ];
-const clientLogos = settings.clientLogos?.length ? settings.clientLogos : demo ? portfolioBrands : [];
+const clientLogos = [...(settings.clientLogos?.length ? settings.clientLogos : demo ? portfolioBrands : []), { alt: 'Euromedica', url: '/client-logos/euromedica.png', tone: 'euromedica' }]
+  // A logo links to the archive only when at least one published project belongs to that client.
+  .map(client => ({ ...client, href: projects.some(project => clientMatches(project, client.alt)) ? `/projects/?client=${clientSlug(client.alt)}` : undefined }));
 const poster = settings.heroPortrait?.url || '/hero-portrait-rim-light.jpg';
 const contactPhoto = settings.contactPhoto?.url ? settings.contactPhoto : { url: '/hero-portrait-rim-light.jpg', alt: 'Nouval against a blue backdrop with rim light around his hair.' };
 const shareImage = new URL(poster, Astro.site || Astro.url).href;
@@ -88,6 +91,7 @@ const services = [
         </div>
       </section>
       <section class="collection" id="collection" aria-labelledby="collection-title">
+        <canvas class="pixel-aura" aria-hidden="true"></canvas>
         <div class="collage-stage">
           <h2 id="collection-title">WE GIVE<br />YOU A POINT<br />OF VIEW</h2>
           <div class="collage-grid">
@@ -110,11 +114,13 @@ const services = [
           <h3>{title}</h3><span class="service-number">0{index + 1}</span><p>{description}</p><span class="service-arrow" aria-hidden="true">→</span>
         </a></li>)}</ul>
       </section>
-      {(demo || clientLogos.length > 0) && <section class="clients section-pad" aria-labelledby="clients-title">
+      {(demo || clientLogos.length > 1) && <section class="clients section-pad" aria-labelledby="clients-title">
         <h2 id="clients-title">CLIENTS</h2>
         <ul class="client-logos">
-          {clientLogos.map(client => <li class={client.tone ? `client-${client.tone}` : undefined}><img src={client.url} alt={client.alt} width="300" height="120" loading="lazy" /></li>)}
-          <li class="client-euromedica"><img src="/client-logos/euromedica.png" alt="Euromedica" width="300" height="120" loading="lazy" /></li>
+          {clientLogos.map(client => {
+            const logo = <img src={client.url} alt={client.alt} width="300" height="120" loading="lazy" />;
+            return <li class={client.tone ? `client-${client.tone}` : undefined}>{client.href ? <a class="client-link" href={client.href} aria-label={`${client.alt} projects`}>{logo}</a> : logo}</li>;
+          })}
         </ul>
       </section>}
       <section id="about" class="about section-pad" aria-labelledby="about-title">
@@ -134,6 +140,7 @@ const services = [
       <img class="footer-logo" src={logo} alt={settings.brandName} width="1636" height="310" loading="lazy" />
     </footer>
     <ProjectDialog projects={all} />
+    <script src="../scripts/pixel-aura.ts"></script>
     <script src="../scripts/motion.ts"></script>
     <script src="../scripts/hero-video.ts"></script>
   </body>

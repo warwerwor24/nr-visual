@@ -69,7 +69,7 @@
 .reveal-pending{opacity:0;translate:0 24px}
 .reveal-pending:focus-within{opacity:1;translate:0 0}
 @keyframes scroll-float{from{translate:0 var(--float-from,36px)}to{translate:0 var(--float-to,-36px)}}
-@supports(animation-timeline:view()){@media(prefers-reduced-motion:no-preference){.collage-card{animation:scroll-float linear both;animation-timeline:view();animation-range:cover 0% cover 100%}.collage-card:nth-child(even){--float-from:-28px;--float-to:28px}.collage-card:focus-visible{animation:none;translate:0 0}}}
+@supports(animation-timeline:view()){@media(prefers-reduced-motion:no-preference){.collage-card{animation:scroll-float linear both,idle-float var(--drift-t,7s) ease-in-out var(--drift-d,0s) infinite;animation-timeline:view(),auto;animation-range:cover 0% cover 100%,normal}.collage-card:nth-child(even){--float-from:-28px;--float-to:28px}.collage-card:focus-visible{animation:none;translate:0 0}}}
 @media(max-width:600px){.site-header{display:flex;min-height:76px;padding:12px 5%;gap:20px}.site-header nav{gap:14px}.site-header nav a{font-size:var(--step--1)}.site-header .brand img{width:115px}.hero{padding:0;min-height:100svh}.hero-portrait{object-position:50% 40%}.hero-kicker{top:16%;left:5%;font-size:var(--step--1)}.hero-services{top:15%;right:5%;font-size:var(--step--1);max-width:155px}.hero .hero-description{top:auto;bottom:28%;left:5%;width:65%;max-width:280px}.hero .hero-description p{font-size:var(--step-2);line-height:1.45}.hero #hero-title{right:5%;bottom:14%;width:90%}.hero .hero-bottom{inset-inline:5%;bottom:3%;font-size:var(--step--1);gap:10px}.hero .hero-bottom>span{font-size:var(--step--1)}.social-links{gap:24px}.footer{padding:30px 5%}.collage-card{--float-from:12px;--float-to:-12px}.collage-card:nth-child(even){--float-from:-12px;--float-to:12px}}
 @media(prefers-reduced-motion:reduce){:root{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}.reveal-pending{opacity:1;translate:none}.collage-card{translate:none}}
 
@@ -195,7 +195,7 @@ dialog.is-photo-view{padding:0;background:transparent;overflow:hidden}
 @media(max-width:600px){.collage-grid{align-items:start}}
 
 /* Hover effects only for real pointers, so they never stick after a tap. */
-@media(hover:hover){.hero-actions a:hover{color:var(--cream)}.all-projects-link:hover{color:var(--cream)}.all-projects-link:hover .link-arrow{translate:6px 0}.contact-button:hover{background:var(--cream-hover)}.dialog-arrow:hover{background:var(--glass-hover)}.dialog-close:hover{background:var(--glass-hover)}.dialog-thumbnail:hover{opacity:1}.project-filters button:hover{color:var(--cream)}.project-subfilters button:hover{color:var(--text)}.site-header nav a:hover,.social-links a:hover,.footer-top a:hover{color:var(--cream)}.site-header nav a:hover:after{transform:scaleX(1)}.service-row:hover h3{color:var(--cream);translate:12px 0}.service-row:hover .service-arrow{opacity:1;translate:0 0}.client-logos li:hover img{opacity:1}.work-card:hover .cover-caption{translate:0 -4px}.dialog-focus:hover{background:var(--glass-hover)}.work-card:hover img{transform:scale(1.035)}.collage-card:hover{z-index:3;transform:translateY(-8px) rotate(0deg);animation:none;translate:0 0}}
+@media(hover:hover){.hero-actions a:hover{color:var(--cream)}.all-projects-link:hover{color:var(--cream)}.all-projects-link:hover .link-arrow{translate:6px 0}.contact-button:hover{background:var(--cream-hover)}.dialog-arrow:hover{background:var(--glass-hover)}.dialog-close:hover{background:var(--glass-hover)}.dialog-thumbnail:hover{opacity:1}.project-filters button:hover{color:var(--cream)}.site-header nav a:hover,.social-links a:hover,.footer-top a:hover{color:var(--cream)}.site-header nav a:hover:after{transform:scaleX(1)}.service-row:hover h3{color:var(--cream);translate:12px 0}.service-row:hover .service-arrow{opacity:1;translate:0 0}.client-logos li:hover img{opacity:1}.work-card:hover .cover-caption{translate:0 -4px}.dialog-focus:hover{background:var(--glass-hover)}.work-card:hover img{transform:scale(1.035)}.collage-card:hover{transform:translateY(-8px) rotate(0deg);animation:none;translate:0 0}}
 
 /* Image loading: Sanity LQIP sits behind each image, which fades in once decoded. */
 .lqip{display:block;background-size:cover;background-position:center}
@@ -214,7 +214,7 @@ dialog.is-photo-view{padding:0;background:transparent;overflow:hidden}
 /* Homepage: floating pill nav, fullscreen sections, condensed display type, one yellow accent. */
 .site-header{position:fixed;top:16px;left:50%;right:auto;bottom:auto;translate:-50% 0;z-index:10;display:flex;align-items:center;gap:8px;min-height:0;padding:0;background:none;border:0;box-shadow:none}
 /* No view-transition-name on the header: it would isolate these pills and stop the backdrop blur from seeing the page. */
-.brand,.site-header nav{background:#11120f73;border:1px solid var(--glass-border);-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);box-shadow:inset 0 1px var(--glass-border),0 8px 32px var(--shade-soft)}
+.brand,.site-header nav,.filter-pill,.kind-dropdown,.category-chip{background:#11120f73;border:1px solid var(--glass-border);-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);box-shadow:inset 0 1px var(--glass-border),0 8px 32px var(--shade-soft)}
 .site-header .brand{width:48px;height:48px;min-width:0;min-height:0;justify-content:center;border-radius:var(--radius-round);transition:transform var(--dur-fast) var(--ease)}
 .site-header .brand img{width:26px;height:26px;object-fit:contain;object-position:center}
 .site-header nav{display:flex;gap:0;padding:1px 6px;border-radius:999px}
@@ -253,6 +253,16 @@ dialog.is-photo-view{padding:0;background:transparent;overflow:hidden}
 .work-card .cover-caption{transition:translate var(--dur-base) var(--ease)}
 
 .collection{display:flex;align-items:center;min-height:100svh;padding:0 4%;background:var(--accent);color:var(--ink)}
+.collection{position:relative;isolation:isolate}
+.collage-stage{position:relative;z-index:1}
+/* Yellow pixel aura that follows the cursor, drawn under the covers and the headline. */
+.pixel-aura{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none;image-rendering:pixelated}
+/* Idle drift animates transform; the scroll float animates translate, so both run together. Hover stops both. */
+@keyframes idle-float{0%,100%{transform:translate3d(0,0,0) rotate(0deg)}50%{transform:translate3d(0,var(--drift-y,-10px),0) rotate(var(--drift-r,.6deg))}}
+.collage-card:nth-child(2n){--drift-y:12px;--drift-r:-.8deg;--drift-t:8.5s;--drift-d:-2s}
+.collage-card:nth-child(3n){--drift-y:-14px;--drift-r:.4deg;--drift-t:9.5s;--drift-d:-4s}
+.collage-card:nth-child(5n){--drift-y:9px;--drift-r:-.5deg;--drift-t:6.5s;--drift-d:-1s}
+@supports not (animation-timeline:view()){@media(prefers-reduced-motion:no-preference){.collage-card{animation:idle-float var(--drift-t,7s) ease-in-out var(--drift-d,0s) infinite}}}
 .collection button:focus-visible{outline-color:var(--ink)}
 .collage-stage{display:grid;place-items:center;width:100%;min-height:100svh;padding:0}
 .collage-stage h2{width:auto;margin:0;font-size:clamp(56px,12vw,240px);line-height:.88;color:var(--ink);text-shadow:none}
@@ -287,6 +297,10 @@ dialog.is-photo-view{padding:0;background:transparent;overflow:hidden}
 .client-logos li{min-height:150px;padding:16px}
 .client-logos img{height:120px;max-width:300px;opacity:.75;transition:opacity var(--dur-base) var(--ease)}
 .client-logos .client-badge img{width:170px;height:170px}
+.client-link{display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:inherit}
+.client-link img{transition:opacity var(--dur-base) var(--ease),scale var(--dur-base) var(--ease)}
+.client-link:focus-visible img{opacity:1}
+@media(hover:hover){.client-link:hover img{scale:1.05}}
 #clients-title{margin-bottom:clamp(16px,3vh,40px);font-family:var(--font-display);font-size:clamp(64px,10vw,200px);font-weight:400;line-height:.9;letter-spacing:0;color:var(--text)}
 
 /* Contact: photo bleeds off the left edge, the invitation sits beside it, everything left aligned like the other sections. */
@@ -365,22 +379,52 @@ dialog.is-photo-view{padding:0;background:transparent;overflow:hidden}
 }
 
 /* All projects: fullscreen 16:9 grid in grayscale. The hovered or focused tile shows its color and its own caption. */
-.projects-page{--cols:5;--row-h:calc(100vw / var(--cols) * 9 / 16);padding:112px 0 64px;min-height:100svh}
-.projects-bar{position:fixed;top:16px;left:2%;right:2%;z-index:9;display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:48px;pointer-events:none}
+.projects-page{--cols:5;--row-h:calc(100vw / var(--cols) * 9 / 16);padding:88px 0 64px;min-height:100svh}
+.projects-bar{position:fixed;top:16px;left:2%;right:2%;z-index:9;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;min-height:48px;pointer-events:none}
 .projects-bar>*{pointer-events:auto}
 .projects-bar h1{font-family:var(--font-display);font-size:clamp(28px,2.6vw,48px);font-weight:400;line-height:1;letter-spacing:0;text-transform:uppercase;color:var(--text);text-shadow:0 2px 12px var(--shade)}
-.projects-toolbar{display:flex;flex-direction:column;align-items:flex-end;gap:0;margin:0}
-.project-filters{display:flex;gap:0 20px}
-.project-filters button,.category-chip{min-width:0;min-height:44px;padding:0;border:0;border-radius:0;background:none;color:var(--muted);font-size:var(--step--1);font-weight:600;letter-spacing:.09em;text-transform:uppercase;text-shadow:0 1px 6px var(--shade);transition:color var(--dur-fast) var(--ease)}
-.project-filters button[aria-pressed=true]{background:none;color:var(--text)}
-.project-filters button:before{content:'▶';display:inline-block;margin-right:6px;font-size:.75em;color:var(--cream);opacity:0;translate:-4px 0;transition:opacity var(--dur-base) var(--ease),translate var(--dur-base) var(--ease)}
-.project-filters button[aria-pressed=true]:before{opacity:1;translate:0 0}
-.category-chip{display:inline-flex;gap:10px;align-items:center;min-height:32px;color:var(--cream)}
-.project-subfilters{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:0 16px;max-width:min(720px,60vw)}
-.project-subfilters[hidden],.project-subfilters button[hidden]{display:none}
-.project-subfilters button{min-height:44px;padding:0;border:0;background:none;color:var(--muted);font-size:var(--step--1);font-weight:500;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;text-shadow:0 1px 6px var(--shade);transition:color var(--dur-fast) var(--ease)}
-.project-subfilters button[aria-pressed=true]{color:var(--cream)}
-.subfilter-count{margin-left:4px;opacity:.6}
+.projects-bar h1{line-height:48px}
+/* One row: the active-filter chip sits left of the pill and slides left as the search field opens. */
+.projects-tools{display:flex;align-items:center;gap:8px}
+/* Search, Photo and Video share one glass pill styled like the main nav. */
+.filter-pill{display:flex;align-items:center;gap:2px;padding:1px 6px;border-radius:999px}
+.filter-pill[hidden]{display:none}
+.tool-button:focus-visible{outline:2px solid var(--text);outline-offset:-5px}
+.tool-button{position:relative;display:grid;place-items:center;width:44px;height:44px;padding:0;border-radius:var(--radius-round);background:none;color:var(--text);transition:color var(--dur-fast) var(--ease)}
+.tool-button[aria-pressed=true]{color:var(--cream)}
+.tool-button:after{content:'';position:absolute;left:14px;right:14px;bottom:6px;height:1px;background:currentColor;transform:scaleX(0);transition:transform var(--dur-base) var(--ease)}
+.tool-button[aria-pressed=true]:after{transform:scaleX(1)}
+.search-box{display:flex;align-items:center}
+.project-search{width:0;min-height:44px;padding:0;border:0;background:none;color:var(--text);font:inherit;font-size:var(--step--1);font-weight:600;opacity:0;transition:width var(--dur-base) var(--ease),opacity var(--dur-base) var(--ease),padding var(--dur-base) var(--ease)}
+.project-search::placeholder{color:var(--muted)}
+.project-search:focus{outline:none}
+.filter-pill{transition:border-color var(--dur-base) var(--ease)}
+.filter-pill:has(.project-search:focus){border-color:#ffffff4d}
+.project-search::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
+.search-box.is-open .project-search{width:clamp(120px,14vw,220px);padding-right:10px;opacity:1}
+.kind-menu{position:relative}
+/* The dropdown fades and drops in; ::before bridges the gap so moving down to it keeps the hover. */
+/* Nested inside the pill's backdrop-filter, its own blur cannot reach the page, so the fill is near solid. */
+.kind-dropdown{position:absolute;top:calc(100% + 10px);right:-6px;z-index:2;display:flex;flex-direction:column;min-width:230px;padding:8px;border-radius:22px;background:#11120fed;opacity:0;visibility:hidden;translate:0 -8px;scale:.97;transform-origin:top right;transition:opacity var(--dur-base) var(--ease),translate var(--dur-base) var(--ease),scale var(--dur-base) var(--ease),visibility 0s linear var(--dur-base)}
+.kind-dropdown:before{content:'';position:absolute;inset:-12px 0 auto;height:12px}
+.kind-dropdown button{display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:44px;padding:0 14px;border-radius:14px;background:none;color:var(--text);font-size:var(--step--1);font-weight:600;text-align:left;white-space:nowrap;opacity:0;translate:0 -4px;transition:background var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease),opacity var(--dur-base) var(--ease),translate var(--dur-base) var(--ease)}
+.kind-dropdown button[aria-pressed=true]{color:var(--cream)}
+.subfilter-count{color:var(--muted);font-weight:500}
+.kind-menu.is-open .kind-dropdown,.kind-menu:not(.is-dismissed):has(:focus-visible) .kind-dropdown{opacity:1;visibility:visible;translate:0 0;scale:1;transition-delay:0s}
+.kind-menu.is-open .kind-dropdown button,.kind-menu:not(.is-dismissed):has(:focus-visible) .kind-dropdown button{opacity:1;translate:0 0}
+@media(hover:hover){
+  .kind-menu:not(.is-dismissed):hover .kind-dropdown{opacity:1;visibility:visible;translate:0 0;scale:1;transition-delay:0s}
+  .kind-menu:not(.is-dismissed):hover .kind-dropdown button{opacity:1;translate:0 0}
+  .tool-button:hover,.kind-dropdown button:hover{color:var(--cream)}
+  .kind-dropdown button:hover{background:var(--glass-hover)}
+}
+.kind-dropdown button:nth-child(2){transition-delay:0s,0s,30ms,30ms}
+.kind-dropdown button:nth-child(3){transition-delay:0s,0s,60ms,60ms}
+.kind-dropdown button:nth-child(4){transition-delay:0s,0s,90ms,90ms}
+.kind-dropdown button:nth-child(5){transition-delay:0s,0s,120ms,120ms}
+.kind-dropdown button:nth-child(n+6){transition-delay:0s,0s,150ms,150ms}
+.category-chip[hidden]{display:none}
+.category-chip{display:inline-flex;gap:10px;align-items:center;min-height:48px;padding:0 18px;white-space:nowrap;border-radius:999px;color:var(--cream);font-size:var(--step--1);font-weight:600}
 .projects-page .sample-notice{margin:0 2% 16px}
 .projects-grid{display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:0;overflow:clip}
 .project-tile .cover-frame{aspect-ratio:16/9}
@@ -402,18 +446,19 @@ dialog.is-photo-view{padding:0;background:transparent;overflow:hidden}
 }
 /* Desktop snaps row by row. The grid starts just under the bar; the first scroll settles the nearest row in the
    middle, and the bottom padding lets the last row reach the middle too. */
-@media(min-width:1000px) and (min-height:700px){.projects-page{padding-top:clamp(120px,14svh,170px);padding-bottom:max(64px,calc((100svh - var(--row-h)) / 2))}}
+@media(min-width:1000px) and (min-height:700px){.projects-page{padding-top:88px;padding-bottom:max(64px,calc((100svh - var(--row-h)) / 2))}}
 @media(max-width:1279px){.projects-page{--cols:4}}
 /* The centered nav pill reaches the filters below 1000px, so the bar drops under it. */
-@media(max-width:999px){.projects-page{--cols:3;padding-top:128px}.projects-bar{top:72px}.projects-page:has(.project-subfilters:not([hidden])){padding-top:172px}}
+@media(max-width:999px){.projects-page{--cols:3}}
+/* Below 1280px the open search and the chip would reach the centered nav, so the bar drops under it. */
+@media(max-width:1279px){.projects-page{padding-top:132px}.projects-bar{top:72px}}
 @media(max-width:600px){
-  .projects-page{--cols:2;padding-top:128px}
+  .projects-page{--cols:2;padding-top:132px}
   .projects-bar{top:72px;left:5%;right:5%}
   .projects-bar h1{font-size:28px}
-  .project-filters{gap:0 12px}
-  /* Full-width scrolling row under the bar, so the type filters never get pushed off screen. */
-  .project-subfilters{position:absolute;top:100%;left:0;right:0;flex-wrap:nowrap;justify-content:flex-start;max-width:none;overflow-x:auto;scrollbar-width:none}
-  .projects-page:has(.project-subfilters:not([hidden])){padding-top:212px}
+  .search-box.is-open .project-search{width:110px}
+  .category-chip{position:absolute;top:calc(100% + 8px);left:0;min-height:40px}
+  .projects-page:has(.category-chip:not([hidden])){padding-top:180px}
   .project-tile .cover-caption{left:8px;right:8px;bottom:8px;width:auto;font-size:var(--step--1)}
   .project-tile .card-top{inset:6px 8px auto}
   .project-tile .card-top>span:first-child,.project-tile .play{display:none}
