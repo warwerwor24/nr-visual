@@ -31,6 +31,20 @@ Reading this as a personal photo/film portfolio for varied clients, in an editor
 - Eight owner-selected brand logos replace the dummy names above experience. KlikFilm is excluded; Kokola and London Taxi are separate. Source provenance is recorded privately in work/client-logo-sources.md. BBYU uses the original video end card, framed in CSS. Colors and proportions remain intact. The CMS logo list still supports replacement and reordering.
 - Logo rows use four columns above 1000px and two below. Native backgrounds retain each logo's contrast. Padded source assets are framed with CSS to balance visible size. A square transparent nr-only PNG supplies the favicon, while the full wordmark stays on the page.
 
+## Homepage redesign (October 2026)
+
+Owner direction from four references: Augen's floating pill nav, Velour's condensed editorial sections, Waverun's giant gray footer logo and Remyshoots' grayscale project grid. The plan and decisions live in the shared Claude Doc "NR Visual Homepage Redesign Plan".
+
+- Nav is the nr mark plus Work, Services and Contact in one glass pill, centered and always visible. There is no About section, so About was dropped from the nav.
+- The hero is a muted showreel loop from the Sanity "Showreel video" field, with no text. The "Showreel poster" image shows while it loads and for reduced motion. A visually hidden h1 keeps the page title, and a pause button satisfies WCAG 2.2.2.
+- Anton is the display face for Featured Work, the tagline, What I Do and the experience heading. Manrope stays for everything else. Yellow is the single accent; blue is kept only for focus rings and selection.
+- Every content section opens with the same small uppercase label over a thin line.
+- The tagline copies Velour's "WE GIVE YOU A POINT OF VIEW" at the owner's request, with 8 floating collage covers. Featured Work shows the first 6 highlights in a 4-column grid whose first two cells hold the heading.
+- Service rows only change color on hover and link to /projects/ filtered by the matching Sanity category.
+- Each homepage section fills the screen. On desktop (≥ 1000 × 700, fine pointer) one wheel gesture, arrow/page key or nav click moves exactly one section; a section taller than the screen scrolls natively to its edge first. Phones, short screens, open dialogs and reduced motion keep normal scrolling. Contact and the footer share the last screen.
+- Revision (same day): the banner gains the Sanity opening sentence as a bottom-left Anton headline over a shade, with a "NRVISUAL's Creative Works" meta row, scroll link and pause button. Contact places a photo (Sanity "Contact photo", falling back to the rim-light portrait) bleeding off the left edge with the left-aligned invitation beside it. Featured and collage slots are topped up with the newest other projects. The tagline section is logo blue with covers at their own aspect ratio. All Projects is now a fullscreen 16:9 grid with a fixed title/filter bar, in-frame hover captions, cover parallax and thin top/bottom blur; it starts just under the bar, the first scroll settles the nearest row in the middle, then each scroll moves one row. Its footer was removed because row snapping never reaches it.
+- All Projects (first version) was full-bleed with no gaps, 2:3 tiles, 5/4/3/2 columns. Tiles are grayscale until hovered or focused; a HUD row follows the hovered tile with number, title, category and subcategories. Touch devices show color and per-tile captions. Columns slide in alternately from above and below on load and on every filter change (out first, then in). Remyshoots' WebGL fisheye, drag loop and sound are not copied.
+
 ## Links page
 
 Owner-approved direction: an additional `/findmehere` page for phone visitors, with WhatsApp first, Website, Instagram, LinkedIn and Email (`nouvalrla@gmail.com`) last, plus several swipeable featured projects taken from the portfolio. The former `/links/` address redirects to this page on Vercel.
