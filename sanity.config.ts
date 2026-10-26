@@ -1,6 +1,7 @@
 import { defineConfig, defineField, defineType } from 'sanity';
 import { structureTool } from 'sanity/structure';
 import { driveMedia, socialUrl, whatsappUrl } from './src/lib/media.mjs';
+import { categories, projectLabel } from './src/lib/categories.mjs';
 import { VideoCoverInput } from './sanity/VideoCoverInput';
 import { GalleryCoverInput } from './sanity/GalleryCoverInput';
 import { PhotoAlbumInput } from './sanity/PhotoAlbumInput';
@@ -17,7 +18,8 @@ const project = defineType({
   fields: [
     defineField({ name: 'kind', group: 'info', title: 'Type of project', type: 'string', options: { list: [{ title: 'Video', value: 'video' }, { title: 'Photography', value: 'photo' }], layout: 'radio' }, initialValue: 'video', validation: rule => rule.required() }),
     defineField({ name: 'title', group: 'info', type: 'string', validation: rule => rule.required().max(80) }),
-    defineField({ name: 'category', group: 'info', type: 'string', options: { list: ['Brand Campaign Video', 'Event Videography', 'Offline & Online Editing', 'Color Grading & VFX', 'Product photography', 'Event photography', 'Portrait photography', 'Editorial photography', 'Campaign film', 'Brand launch', 'Event coverage', 'Online course', 'Editorial', 'Creative film'] }, validation: rule => rule.required() }),
+    ...(['video', 'photo'] as const).map(kind => defineField({ name: `${kind}Categories`, group: 'info', title: 'Sub-categories', description: 'Pick every type that fits, e.g. Brand Campaign + Short-form. The first one is shown on the card.', type: 'array', of: [{ type: 'string' }], options: { list: categories[kind], layout: 'grid' }, hidden: ({ document }) => (document?.kind || 'video') !== kind, validation: rule => rule.unique().custom((value, context) => (context.document?.kind || 'video') !== kind || value?.length ? true : 'Pick at least one sub-category.') })),
+    defineField({ name: 'category', group: 'info', title: 'Old category (read only)', description: 'Kept until every project has sub-categories.', type: 'string', readOnly: true, hidden: ({ value }) => !value }),
     defineField({ name: 'videoSubcategories', group: 'info', title: 'Video subcategories', description: 'Pick every type that applies.', type: 'array', of: [{ type: 'string' }], options: { list: ['Long form', 'Short form', 'Ads', 'Campaign', 'Event', 'Motion graphics'], layout: 'grid' }, hidden: ({ document }) => document?.kind !== 'video', validation: rule => rule.unique() }),
     defineField({ name: 'client', group: 'info', title: 'Brand / client', type: 'string', validation: rule => rule.max(100) }),
     defineField({ name: 'role', group: 'info', title: 'Your role', description: 'For example: photographer, director, editor, cinematographer or colorist.', type: 'string', validation: rule => rule.max(160) }),
@@ -40,7 +42,7 @@ const project = defineType({
     defineField({ name: 'driveUrl', group: 'video', title: 'Google Drive video link', description: 'Use an HTTPS file sharing link. Set the video to Anyone with the link / Viewer and test without signing in.', type: 'url', hidden: ({ document }) => document?.kind !== 'video', validation: rule => rule.custom((value, context) => context.document?.kind !== 'video' || driveMedia(value) ? true : 'Paste a valid https://drive.google.com/file/d/…/view link.') }),
     defineField({ name: 'videoFormat', group: 'video', title: 'Video format', description: 'Choose the actual video format; it is not detected from the Drive link. This controls the popup, while WORK covers keep a uniform grid.', type: 'string', initialValue: '16:9', options: { list: [{ title: 'Landscape (16:9)', value: '16:9' }, { title: 'Portrait (9:16)', value: '9:16' }, { title: 'Square (1:1)', value: '1:1' }, { title: 'Portrait (4:5)', value: '4:5' }] }, hidden: ({ document }) => document?.kind !== 'video' }),
   ],
-  preview: { select: { title: 'title', subtitle: 'category', media: 'cover' } },
+  preview: { select: { title: 'title', kind: 'kind', video: 'videoCategories', photo: 'photoCategories', category: 'category', media: 'cover' }, prepare: ({ title, kind, video, photo, category, media }) => ({ title, media, subtitle: projectLabel({ kind: kind || 'video', categories: kind === 'photo' ? photo : video, category }) }) },
 });
 const settings = defineType({
   name: 'siteSettings', title: 'Website settings', type: 'document',
