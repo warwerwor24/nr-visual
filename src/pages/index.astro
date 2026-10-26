@@ -16,6 +16,7 @@ const portfolioBrands = [
   { alt: 'Buttered', url: '/client-logos/buttered.png' },
   { alt: 'SKAK Studios', url: '/client-logos/skak-studios-white.png' },
   { alt: 'Telkomsel', url: '/client-logos/telkomsel.png' },
+  { alt: 'Ardiles', url: '/client-logos/ardiles.png' },
   { alt: 'Yanmar', url: '/client-logos/yanmar.png' },
   { alt: 'BBYU', url: '/client-logos/bbyu-transparent.png' },
   { alt: 'Kokola', url: '/client-logos/kokola.png' },
@@ -32,7 +33,7 @@ const fill = (picked, count, pool) => [...picked, ...pool.filter(project => !pic
 const featured = fill(highlights, 11, projects.filter(project => project.kind === 'video'));
 const floating = fill(collage, 8, projects);
 const all = [...new Map([...projects, ...featured, ...floating].map(project => [project._id, project])).values()];
-// Titles match the Sanity project categories, so each row opens the archive filtered to it.
+// Rows open the full archive; service names are not project categories.
 const services = [
   ['Brand Campaign Video', 'Films for new ideas, new products and the moments a brand wants to be seen.'],
   ['Event Videography', 'The atmosphere, the people and everything that makes the moment worth keeping.'],
@@ -110,7 +111,7 @@ const services = [
       </section>
       <section id="services" class="services section-pad" aria-labelledby="services-title">
         <div class="section-label"><h2 id="services-title">What I do</h2><span>Full service production</span></div>
-        <ul class="service-list">{services.map(([title, description], index) => <li><a class="service-row" href={`/projects/?category=${encodeURIComponent(title)}`}>
+        <ul class="service-list">{services.map(([title, description], index) => <li><a class="service-row" href="/projects/">
           <h3>{title}</h3><span class="service-number">0{index + 1}</span><p>{description}</p><span class="service-arrow" aria-hidden="true">→</span>
         </a></li>)}</ul>
       </section>
