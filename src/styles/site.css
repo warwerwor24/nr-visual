@@ -195,7 +195,7 @@ dialog.is-photo-view{padding:0;background:transparent;overflow:hidden}
 @media(max-width:600px){.collage-grid{align-items:start}}
 
 /* Hover effects only for real pointers, so they never stick after a tap. */
-@media(hover:hover){.hero-actions a:hover{color:var(--cream)}.all-projects-link:hover{color:var(--cream)}.all-projects-link:hover .link-arrow{translate:6px 0}.contact-button:hover{background:var(--cream-hover)}.dialog-arrow:hover{background:var(--glass-hover)}.dialog-close:hover{background:var(--glass-hover)}.dialog-thumbnail:hover{opacity:1}.project-filters button:hover{color:var(--cream)}.site-header nav a:hover,.social-links a:hover,.footer-top a:hover{color:var(--cream)}.site-header nav a:hover:after{transform:scaleX(1)}.service-row:hover h3{color:var(--cream);translate:12px 0}.service-row:hover .service-arrow{opacity:1;translate:0 0}.client-logos li:hover img{opacity:1}.work-card:hover .cover-caption{translate:0 -4px}.dialog-focus:hover{background:var(--glass-hover)}.work-card:hover img{transform:scale(1.035)}.collage-card:hover{z-index:3;transform:translateY(-8px) rotate(0deg);animation:none;translate:0 0}}
+@media(hover:hover){.hero-actions a:hover{color:var(--cream)}.all-projects-link:hover{color:var(--cream)}.all-projects-link:hover .link-arrow{translate:6px 0}.contact-button:hover{background:var(--cream-hover)}.dialog-arrow:hover{background:var(--glass-hover)}.dialog-close:hover{background:var(--glass-hover)}.dialog-thumbnail:hover{opacity:1}.project-filters button:hover{color:var(--cream)}.project-subfilters button:hover{color:var(--text)}.site-header nav a:hover,.social-links a:hover,.footer-top a:hover{color:var(--cream)}.site-header nav a:hover:after{transform:scaleX(1)}.service-row:hover h3{color:var(--cream);translate:12px 0}.service-row:hover .service-arrow{opacity:1;translate:0 0}.client-logos li:hover img{opacity:1}.work-card:hover .cover-caption{translate:0 -4px}.dialog-focus:hover{background:var(--glass-hover)}.work-card:hover img{transform:scale(1.035)}.collage-card:hover{z-index:3;transform:translateY(-8px) rotate(0deg);animation:none;translate:0 0}}
 
 /* Image loading: Sanity LQIP sits behind each image, which fades in once decoded. */
 .lqip{display:block;background-size:cover;background-position:center}
@@ -376,6 +376,11 @@ dialog.is-photo-view{padding:0;background:transparent;overflow:hidden}
 .project-filters button:before{content:'▶';display:inline-block;margin-right:6px;font-size:.75em;color:var(--cream);opacity:0;translate:-4px 0;transition:opacity var(--dur-base) var(--ease),translate var(--dur-base) var(--ease)}
 .project-filters button[aria-pressed=true]:before{opacity:1;translate:0 0}
 .category-chip{display:inline-flex;gap:10px;align-items:center;min-height:32px;color:var(--cream)}
+.project-subfilters{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:0 16px;max-width:min(720px,60vw)}
+.project-subfilters[hidden],.project-subfilters button[hidden]{display:none}
+.project-subfilters button{min-height:44px;padding:0;border:0;background:none;color:var(--muted);font-size:var(--step--1);font-weight:500;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;text-shadow:0 1px 6px var(--shade);transition:color var(--dur-fast) var(--ease)}
+.project-subfilters button[aria-pressed=true]{color:var(--cream)}
+.subfilter-count{margin-left:4px;opacity:.6}
 .projects-page .sample-notice{margin:0 2% 16px}
 .projects-grid{display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:0;overflow:clip}
 .project-tile .cover-frame{aspect-ratio:16/9}
@@ -405,6 +410,9 @@ dialog.is-photo-view{padding:0;background:transparent;overflow:hidden}
   .projects-bar{top:72px;left:5%;right:5%}
   .projects-bar h1{font-size:28px}
   .project-filters{gap:0 12px}
+  /* Full-width scrolling row under the bar, so the type filters never get pushed off screen. */
+  .project-subfilters{position:absolute;top:100%;left:0;right:0;flex-wrap:nowrap;justify-content:flex-start;max-width:none;overflow-x:auto;scrollbar-width:none}
+  .projects-page:has(.project-subfilters:not([hidden])){padding-top:212px}
   .project-tile .cover-caption{left:8px;right:8px;bottom:8px;width:auto;font-size:var(--step--1)}
   .project-tile .card-top{inset:6px 8px auto}
   .project-tile .card-top>span:first-child,.project-tile .play{display:none}

@@ -54,21 +54,46 @@ try {
   assert.equal(await page.evaluate(() => document.activeElement.matches('.projects-grid .work-card:not([hidden])')), true);
 
   // A browser-only fixture proves photo filtering even when only videos are published.
-  await page.locator('.projects-grid .work-card').first().evaluate(card => { card.dataset.kind = 'photo'; });
+  const photos = await page.locator('.projects-grid .work-card[data-kind="photo"]').count();
+  await page.locator('.projects-grid .work-card[data-kind="video"]').first().evaluate(card => { card.dataset.kind = 'photo'; });
   await page.locator('[data-filter="photo"]').click();
-  assert.equal(await page.locator('.projects-grid .work-card:visible').count(), 1);
-  assert.equal(await page.locator('#project-count').innerText(), '1 photo project');
+  assert.equal(await page.locator('.projects-grid .work-card:visible').count(), photos + 1);
+  assert.equal(await page.locator('#project-count').innerText(), `${photos + 1} photo ${photos ? 'projects' : 'project'}`);
   await page.locator('[data-filter="video"]').click();
   assert.equal(await page.locator('.projects-grid .work-card[data-kind="photo"]:visible').count(), 0);
   await page.route(`${base}/projects/`, async route => {
     const response = await route.fetch();
-    const html = (await response.text()).replace(/<button class="work-card"[\s\S]*?<\/button>/g, '');
+    const html = (await response.text()).replace(/<button class="work-card[^"]*"[\s\S]*?<\/button>/g, '');
     await route.fulfill({ response, body: html });
   });
   await page.goto(`${base}/projects/`);
   await page.locator('[data-filter="all"]').click();
   assert(await page.getByText('New projects are on the way.', { exact: true }).isVisible());
   await page.unroute(`${base}/projects/`);
+
+  await page.goto(`${base}/projects/`);
+  assert(await page.locator('.project-subfilters').isHidden());
+  for (const kind of ['video', 'photo']) {
+    await page.locator(`[data-filter="${kind}"]`).click();
+    const chips = page.locator(`.project-subfilters button[data-kind="${kind}"]`);
+    if (await chips.count() < 2) continue;
+    assert.equal(await page.locator('.project-subfilters button[data-kind]:visible').count(), await chips.count());
+    for (const chip of await chips.all()) {
+      await chip.click();
+      const sub = await chip.getAttribute('data-sub');
+      const expected = await page.locator('.projects-grid .work-card').evaluateAll((items, [kind, sub]) => items.filter(item => item.dataset.kind === kind && item.dataset.categories.split(' ').includes(sub)).length, [kind, sub]);
+      assert(expected > 0);
+      assert.equal(await page.locator('.projects-grid .work-card:visible').count(), expected);
+      assert.equal(await chip.locator('.subfilter-count').innerText(), `(${expected})`);
+      assert.equal(await page.locator('.project-subfilters [aria-pressed="true"]').count(), 1);
+      assert((await chip.boundingBox()).height >= 44);
+    }
+    await page.locator(`[data-filter="${kind}"]`).click();
+    assert.equal(await page.locator('.project-subfilters [data-sub="all"]').getAttribute('aria-pressed'), 'true');
+  }
+  await page.locator('[data-filter="all"]').click();
+  assert(await page.locator('.project-subfilters').isHidden());
+  console.log('PASS: sub-category chips per type, counts, reset on type change');
 
   const noScript = await browser.newPage({ javaScriptEnabled: false });
   await noScript.goto(`${base}/projects/`);

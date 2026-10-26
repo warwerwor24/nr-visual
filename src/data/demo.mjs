@@ -1,5 +1,6 @@
 // Preview fixtures only. Never used when a Sanity project is connected.
 const categories = ['Campaign film', 'Product story', 'Event coverage', 'Fashion film', 'Brand launch', 'Online course', 'Event highlights', 'Product campaign', 'Creative film', 'Product photography', 'Editorial', 'Behind the scenes', 'Campaign photography', 'Event photography', 'Visual study'];
+const subcategories = [['brand-campaign', 'short-form'], ['brand-campaign'], ['event'], ['music-creative'], ['opening-bumper'], ['education', 'long-form'], ['event', 'short-form'], ['brand-campaign'], ['music-creative'], ['product'], ['editorial'], ['behind-the-scenes'], ['product'], ['event'], ['portrait']];
 const stock = [
   ['photo-1604494089111-d1b569f5ec24', 'Laura Chouette', 'https://unsplash.com/photos/n1eC1eaQVq0'],
   ['photo-1603808033192-082d6919d3e1', 'Mojtaba Fahiminia', 'https://unsplash.com/photos/t4g1gctAaKk'],
@@ -16,6 +17,7 @@ const projects = categories.map((category, index) => ({
   _id: `sample-${index + 1}`,
   title: category,
   category,
+  categories: subcategories[index],
   description: 'Layout sample only. Replace this with your own project, cover image and description before publishing.',
   kind: index < 9 ? 'video' : 'photo',
   cover: `https://images.unsplash.com/${stock[index % stock.length][0]}?auto=format&fit=crop&w=1000&q=80`,

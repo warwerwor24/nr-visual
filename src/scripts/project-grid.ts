@@ -2,6 +2,8 @@ const grid = document.querySelector<HTMLElement>('#projects-grid')!;
 const filters = document.querySelector<HTMLElement>('.project-filters')!;
 const buttons = [...filters.querySelectorAll<HTMLButtonElement>('button[data-filter]')];
 const chip = document.querySelector<HTMLButtonElement>('.category-chip')!;
+const subfilters = document.querySelector<HTMLElement>('.project-subfilters')!;
+const subButtons = [...subfilters.querySelectorAll<HTMLButtonElement>('button[data-sub]')];
 const cards = [...grid.querySelectorAll<HTMLButtonElement>('.project-tile')];
 const count = document.querySelector<HTMLElement>('#project-count')!;
 const empty = document.querySelector<HTMLElement>('#projects-empty')!;
@@ -9,12 +11,20 @@ const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
 let kind = 'all';
 let category = new URLSearchParams(location.search).get('category');
+let sub = 'all';
 let busy = false;
 
 function applyFilter() {
-  cards.forEach(card => { card.hidden = (kind !== 'all' && card.dataset.kind !== kind) || (!!category && card.dataset.category !== category); });
+  cards.forEach(card => { card.hidden = (kind !== 'all' && card.dataset.kind !== kind) || (!!category && card.dataset.category !== category) || (sub !== 'all' && !card.dataset.categories?.split(' ').includes(sub)); });
+  subButtons.forEach(option => {
+    option.hidden = option.dataset.sub !== 'all' && option.dataset.kind !== kind;
+    option.setAttribute('aria-pressed', String(!option.hidden && option.dataset.sub === sub));
+  });
+  // Only offer chips when the chosen type has more than one way to narrow it.
+  subfilters.hidden = kind === 'all' || subButtons.filter(option => !option.hidden).length < 2;
   const visible = cards.filter(card => !card.hidden).length;
-  const label = [category, kind === 'all' ? '' : kind].filter(Boolean).join(' ');
+  const title = subButtons.find(option => option.dataset.kind === kind && option.dataset.sub === sub)?.dataset.title;
+  const label = [category, title, kind === 'all' ? '' : kind].filter(Boolean).join(' ');
   count.textContent = `${visible} ${label ? `${label} ` : ''}${visible === 1 ? 'project' : 'projects'}`;
   empty.hidden = visible > 0;
   empty.textContent = label ? `No ${label} projects yet. Check back soon or show all projects.` : 'New projects are on the way.';
@@ -64,8 +74,10 @@ async function update(change: () => void) {
 
 buttons.forEach(button => button.addEventListener('click', () => update(() => {
   kind = button.dataset.filter!;
+  sub = 'all';
   buttons.forEach(option => option.setAttribute('aria-pressed', String(option === button)));
 })));
+subButtons.forEach(button => button.addEventListener('click', () => update(() => { sub = button.dataset.sub!; })));
 chip.addEventListener('click', () => update(() => {
   category = null;
   history.replaceState(null, '', location.pathname);

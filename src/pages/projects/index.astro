@@ -3,7 +3,12 @@ import '../../styles/site.css';
 import { loadContent } from '../../lib/content.mjs';
 import ProjectCard from '../../components/ProjectCard.astro';
 import ProjectDialog from '../../components/ProjectDialog.astro';
+import { categories } from '../../lib/categories.mjs';
 const { demo, settings, projects } = await loadContent({ ...import.meta.env, ...process.env });
+// Only sub-categories that have at least one project get a chip.
+const subfilters = Object.entries(categories).flatMap(([kind, list]) => list
+  .map(item => ({ ...item, kind, count: projects.filter(project => project.kind === kind && project.categories?.includes(item.value)).length }))
+  .filter(item => item.count));
 const counts = { all: projects.length, photo: projects.filter(project => project.kind === 'photo').length, video: projects.filter(project => project.kind === 'video').length };
 ---
 <!doctype html>
@@ -30,6 +35,10 @@ const counts = { all: projects.length, photo: projects.filter(project => project
         <div class="projects-toolbar">
           <div class="project-filters" role="group" aria-label="Filter projects by media type" hidden>
             {(['all', 'photo', 'video'] as const).map(kind => <button type="button" data-filter={kind} aria-pressed={String(kind === 'all')} aria-controls="projects-grid">{kind}<span>({counts[kind]})</span></button>)}
+          </div>
+          <div class="project-subfilters" role="group" aria-label="Filter by sub-category" hidden>
+            <button type="button" data-sub="all" aria-pressed="true" aria-controls="projects-grid">All</button>
+            {subfilters.map(item => <button type="button" data-kind={item.kind} data-sub={item.value} data-title={item.title} aria-pressed="false" aria-controls="projects-grid">{item.title}<span class="subfilter-count">({item.count})</span></button>)}
           </div>
           <button type="button" class="category-chip" aria-controls="projects-grid" hidden><span class="category-name"></span><span aria-hidden="true">✕</span><span class="visually-hidden">Clear category filter</span></button>
           <p id="project-count" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">{projects.length} {projects.length === 1 ? 'project' : 'projects'}</p>

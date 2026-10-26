@@ -3,6 +3,7 @@ import '../../styles/site.css';
 import '../../styles/links.css';
 import { loadContent } from '../../lib/content.mjs';
 import { whatsappUrl } from '../../lib/media.mjs';
+import { projectLabel } from '../../lib/categories.mjs';
 import CoverImage from '../../components/CoverImage.astro';
 import ProjectDialog from '../../components/ProjectDialog.astro';
 
@@ -55,7 +56,7 @@ const shareImage = new URL('/hero-portrait-rim-light.jpg', Astro.site || Astro.u
           {highlights.map((project, index) => <li>
             <button class="links-project" data-project={project._id} aria-label={`${project.kind === 'video' ? 'Watch' : 'Open'} ${project.title}${demo ? ', sample project' : ''}`}>
               <span class="links-project-cover"><CoverImage project={project} loading={index === 0 ? 'eager' : 'lazy'} /></span>
-              <span class="links-project-copy"><span class="links-project-title">{project.title}</span><span class="links-project-category">{demo ? 'Sample project' : project.category}</span></span>
+              <span class="links-project-copy"><span class="links-project-title">{project.title}</span><span class="links-project-category">{demo ? 'Sample project' : projectLabel(project)}</span></span>
             </button>
           </li>)}
         </ul>
