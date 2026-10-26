@@ -404,7 +404,8 @@ dialog.is-photo-view{padding:0;background:transparent;overflow:hidden}
    middle, and the bottom padding lets the last row reach the middle too. */
 @media(min-width:1000px) and (min-height:700px){.projects-page{padding-top:clamp(120px,14svh,170px);padding-bottom:max(64px,calc((100svh - var(--row-h)) / 2))}}
 @media(max-width:1279px){.projects-page{--cols:4}}
-@media(max-width:999px){.projects-page{--cols:3}}
+/* The centered nav pill reaches the filters below 1000px, so the bar drops under it. */
+@media(max-width:999px){.projects-page{--cols:3;padding-top:128px}.projects-bar{top:72px}.projects-page:has(.project-subfilters:not([hidden])){padding-top:172px}}
 @media(max-width:600px){
   .projects-page{--cols:2;padding-top:128px}
   .projects-bar{top:72px;left:5%;right:5%}
