@@ -59,7 +59,6 @@
 @media(max-width:600px){.projects-page{padding:108px 5% 50px}.projects-grid{grid-template-columns:1fr;gap:24px}.projects-heading{margin-bottom:28px}}
 .client-logos li{position:relative;overflow:hidden;background:transparent;min-height:130px;padding:20px}
 .client-logos img{width:100%;height:80px;max-width:220px;object-fit:contain}
-.client-logos .client-euromedica{grid-column:1/-1}
 .client-logos .client-euromedica img{max-width:320px;height:auto;filter:invert(1)}
 .client-logos .client-badge img{position:absolute;left:50%;top:50%;max-width:none;transform:translate(-50%,-50%)}
 .client-logos .client-badge img{width:140px;height:140px}
@@ -297,6 +296,7 @@ dialog.is-photo-view{padding:0;background:transparent;overflow:hidden}
 .client-logos li{min-height:150px;padding:16px}
 .client-logos img{height:120px;max-width:300px;opacity:.75;transition:opacity var(--dur-base) var(--ease)}
 .client-logos .client-badge img{width:170px;height:170px}
+.client-logos .client-tile img{width:120px;height:120px;max-width:none;border-radius:var(--radius-media)}
 .client-link{display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:inherit}
 .client-link img{transition:opacity var(--dur-base) var(--ease),scale var(--dur-base) var(--ease)}
 .client-link:focus-visible img{opacity:1}
@@ -350,6 +350,7 @@ dialog.is-photo-view{padding:0;background:transparent;overflow:hidden}
   .client-logos li{min-height:96px}
   .client-logos img{height:72px}
   .client-logos .client-badge img{width:110px;height:110px}
+  .client-logos .client-tile img{width:80px;height:80px}
   .about{grid-template-columns:1fr;padding:0 5% 40px}
   .about-photo{margin:0 -5%;aspect-ratio:4/5}
   .about-body{padding:32px 0 0}
