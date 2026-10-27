@@ -73,7 +73,10 @@ const services = [
     <main id="main">
       <section class="hero" id="top" aria-labelledby="hero-title">
         {settings.heroVideo
-          ? <video class="hero-media" src={settings.heroVideo} poster={poster} muted loop playsinline preload="metadata" aria-label="Showreel of selected work"></video>
+          ? <video class="hero-media" poster={poster} muted loop playsinline preload="metadata" aria-label="Showreel of selected work">
+              {settings.heroVideoMobile && <source src={settings.heroVideoMobile} media="(max-aspect-ratio: 1/1)" />}
+              <source src={settings.heroVideo} />
+            </video>
           : <img class="hero-media" src={poster} srcset={posterSrcset} sizes={posterSrcset ? '100vw' : undefined} alt="" width="2752" height="1536" fetchpriority="high" />}
         <div class="hero-copy">
           <h1 id="hero-title">{settings.heroText}</h1>
