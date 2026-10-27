@@ -65,7 +65,7 @@ function isMouseWheel(event: WheelEvent) {
   return !trackpadLike && event.timeStamp > trackpadUntil;
 }
 
-// Desktop: one wheel gesture, key press or nav click moves exactly one fullscreen section (or one project row).
+// Desktop: one wheel gesture, key press or nav click moves exactly one fullscreen section (or three project rows).
 const snapSections = [...document.querySelectorAll<HTMLElement>('main > section')];
 const snapSize = matchMedia('(min-width: 1000px) and (min-height: 700px)');
 const navLinks = [...document.querySelectorAll<HTMLAnchorElement>('.site-header nav a[href^="#"]')];
@@ -75,7 +75,9 @@ let gestureUsed = false;
 
 const projectGrid = document.querySelector<HTMLElement>('#projects-grid');
 
-// The homepage snaps whole sections; All Projects snaps row by row with the row centered on screen.
+// The homepage snaps whole sections; All Projects snaps rows with the row centered on screen,
+// three rows per step because the sharp band between the blurred edges shows three rows.
+const rowStep = projectGrid ? 3 : 1;
 function snapTargets() {
   if (!projectGrid) return snapSections;
   const rows = new Map<number, HTMLElement>();
@@ -86,15 +88,22 @@ function snapActive() {
   return snapTargets().length > 1 && snapSize.matches && finePointer.matches && !reducedMotion.matches && !document.querySelector('dialog[open]');
 }
 // Layout position from offsets, so tiles still sliding in (transformed) report where they will land.
-function sectionTop(section: HTMLElement) {
-  const max = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+function idealTop(section: HTMLElement) {
   let top = 0;
   for (let node: HTMLElement | null = section; node; node = node.offsetParent as HTMLElement | null) top += node.offsetTop;
-  const offset = projectGrid ? (innerHeight - section.offsetHeight) / 2 : 0;
-  return Math.max(0, Math.min(max, Math.round(top - offset)));
+  return top - (projectGrid ? (innerHeight - section.offsetHeight) / 2 : 0);
 }
+function sectionTop(section: HTMLElement) {
+  const max = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  return Math.max(0, Math.min(max, Math.round(idealTop(section))));
+}
+// Rows: the one nearest the screen center, so at the very top the step counts from the row actually in the middle.
 function currentSection() {
   let index = 0;
+  if (projectGrid) {
+    snapTargets().forEach((row, i, rows) => { if (Math.abs(idealTop(row) - scrollY) < Math.abs(idealTop(rows[index]) - scrollY)) index = i; });
+    return index;
+  }
   snapTargets().forEach((section, i) => { if (sectionTop(section) <= scrollY + 2) index = i; });
   return index;
 }
@@ -129,7 +138,7 @@ function snapWheel(event: WheelEvent) {
   event.preventDefault();
   if (snapping || gestureUsed || !direction) return;
   gestureUsed = true;
-  snapTo(index + direction);
+  snapTo(index + direction * rowStep);
 }
 
 window.addEventListener('keydown', event => {
@@ -137,7 +146,7 @@ window.addEventListener('keydown', event => {
   const target = event.target instanceof Element ? event.target : document.body;
   if (target.closest('input, textarea, select, [contenteditable="true"]') || (event.key === ' ' && target.closest('a, button'))) return;
   const index = currentSection();
-  const next = ({ ArrowDown: index + 1, PageDown: index + 1, ' ': event.shiftKey ? index - 1 : index + 1, ArrowUp: index - 1, PageUp: index - 1, Home: 0, End: snapTargets().length - 1 } as Record<string, number>)[event.key];
+  const next = ({ ArrowDown: index + rowStep, PageDown: index + rowStep, ' ': event.shiftKey ? index - rowStep : index + rowStep, ArrowUp: index - rowStep, PageUp: index - rowStep, Home: 0, End: snapTargets().length - 1 } as Record<string, number>)[event.key];
   if (next === undefined) return;
   event.preventDefault();
   if (!snapping) snapTo(next);

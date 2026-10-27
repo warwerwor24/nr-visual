@@ -35,7 +35,9 @@ const shareImage = new URL(poster, Astro.site || Astro.url).href;
 // Empty slots are topped up with the newest other projects so both layouts always look complete.
 const fill = (picked, count, pool) => [...picked, ...pool.filter(project => !picked.some(item => item._id === project._id))].slice(0, count);
 const featured = fill(highlights, 11, projects.filter(project => project.kind === 'video'));
-const floating = fill(collage, 8, projects);
+// The collage never repeats a featured film.
+const notFeatured = project => !featured.some(item => item._id === project._id);
+const floating = fill(collage.filter(notFeatured), 8, projects.filter(notFeatured));
 const all = [...new Map([...projects, ...featured, ...floating].map(project => [project._id, project])).values()];
 // Rows open the full archive; service names are not project categories.
 const services = [

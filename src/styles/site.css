@@ -233,7 +233,7 @@ dialog.is-photo-view{padding:0;background:transparent;overflow:hidden}
 /* Shade under the copy keeps the headline readable over any frame of the showreel. */
 .hero:after{content:'';position:absolute;inset:auto 0 0;height:60%;background:linear-gradient(transparent,#11120fd9);pointer-events:none}
 .hero-copy{position:absolute;inset:auto 4% 5%;z-index:1}
-.hero-copy h1{max-width:6.4em;font-family:var(--font-display);font-size:clamp(56px,9vw,180px);font-weight:400;line-height:.92;letter-spacing:0;text-transform:uppercase;color:var(--text)}
+.hero-copy h1{font-family:var(--font-display);font-size:clamp(26px,5vw,88px);white-space:nowrap;text-align:center;font-weight:400;line-height:.92;letter-spacing:0;text-transform:uppercase;color:var(--text)}
 .hero-meta{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:clamp(16px,3vh,32px);padding-top:12px;border-top:1px solid var(--glass-border);font-size:var(--step--1);font-weight:600;letter-spacing:.09em;text-transform:uppercase}
 .hero-actions{display:flex;align-items:center;gap:16px}
 .hero-actions a{display:inline-flex;align-items:center;gap:8px;min-height:44px;transition:color var(--dur-fast) var(--ease)}
@@ -445,7 +445,7 @@ dialog.is-photo-view{padding:0;background:transparent;overflow:hidden}
   .project-tile:is(:hover,:focus-visible) :is(.card-top,.play,.cover-caption){opacity:1;translate:0 0}
   .project-tile:is(:hover,:focus-visible) .cover-frame:after{opacity:1}
 }
-/* Desktop snaps row by row. The grid starts just under the bar; the first scroll settles the nearest row in the
+/* Desktop snaps three rows at a time. The grid starts just under the bar; the first scroll settles the nearest row in the
    middle, and the bottom padding lets the last row reach the middle too. */
 @media(min-width:1000px) and (min-height:700px){.projects-page{padding-top:88px;padding-bottom:max(64px,calc((100svh - var(--row-h)) / 2))}}
 @media(max-width:1279px){.projects-page{--cols:4}}
@@ -465,6 +465,10 @@ dialog.is-photo-view{padding:0;background:transparent;overflow:hidden}
   .project-tile .card-top>span:first-child,.project-tile .play{display:none}
 }
 @media(prefers-reduced-motion:reduce){.project-tile .lqip{transform:none}}
+.hover-clip{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity var(--dur-base) var(--ease);pointer-events:none}.hover-clip.is-playing{opacity:1}
 .dialog-shell{align-self:start}
 .dialog-meta{display:grid;gap:10px;margin:0 0 16px;padding-bottom:16px;border-bottom:1px solid var(--line)}.dialog-meta:empty{display:none}.dialog-meta dt{font-size:var(--step--1);font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}.dialog-meta dd{margin:2px 0 0;font-size:var(--step-0);line-height:1.4}
 @media(max-width:600px){img.hero-media{object-position:72% 50%}}
+/* Logos wrap as centered rows, so a short last row sits in the middle. */
+.client-logos{display:flex;flex-wrap:wrap;justify-content:center}.client-logos li{flex:0 0 calc((100% - 48px) / 4)}
+@media(max-width:1000px){.client-logos li{flex-basis:calc((100% - 16px) / 2)}}
