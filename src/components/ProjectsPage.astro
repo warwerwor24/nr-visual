@@ -1,0 +1,92 @@
+---
+import '../styles/site.css';
+import { loadCachedContent } from '../lib/content.mjs';
+import ProjectCard from './ProjectCard.astro';
+import ProjectDialog from './ProjectDialog.astro';
+import { categories } from '../lib/categories.mjs';
+import { clientSlug, projectClients } from '../lib/clients.mjs';
+import { isPersonal } from '../lib/project-url.mjs';
+import { photoUrl } from '../lib/cover.mjs';
+// `open` is set on /projects/<slug>/ pages: the dialog opens on that project and the meta tags describe it.
+const { open } = Astro.props;
+const content = await loadCachedContent({ ...import.meta.env, ...process.env });
+const { demo, settings } = content;
+const projects = [...content.projects.filter(project => !isPersonal(project)), ...content.projects.filter(isPersonal)];
+const pageTitle = open ? `${open.title} | ${settings.brandName}` : `All projects | ${settings.brandName}`;
+const pageDescription = open?.description || `Explore all photography and film projects by ${settings.brandName}.`;
+const canonical = Astro.site && new URL(open ? Astro.url.pathname : '/projects/', Astro.site);
+// Each type opens a dropdown of its sub-categories; only those with at least one project are listed.
+// Photo stays hidden until there are enough albums to browse.
+const kinds = (['photo', 'video'] as const).map(kind => ({
+  kind,
+  label: kind === 'photo' ? 'Photo' : 'Video',
+  count: projects.filter(project => project.kind === kind).length,
+  subs: categories[kind]
+    .map(item => ({ ...item, count: projects.filter(project => project.kind === kind && project.categories?.includes(item.value)).length }))
+    .filter(item => item.count),
+})).filter(item => item.kind !== 'photo' || item.count >= 6);
+const icons = {
+  photo: '<path d="M4 8h3l2-3h6l2 3h3v11H4Z" /><circle cx="12" cy="13" r="3.5" />',
+  video: '<rect x="3" y="6" width="13" height="12" rx="2" /><path d="m16 10 5-3v10l-5-3Z" />',
+};
+// Same names as the homepage client logos, so ?client= links resolve to a readable chip label.
+const clientNames = [...(settings.clientLogos ?? []).map(logo => logo.alt), 'Euromedica'];
+const clientTitles = Object.fromEntries(clientNames.map(name => [clientSlug(name), name]));
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+    <meta name="theme-color" content="#11120f" />
+    {demo && <meta name="robots" content="noindex,nofollow" />}
+    {canonical && <link rel="canonical" href={canonical} />}
+    {open && <>
+      <meta property="og:title" content={pageTitle} />
+      <meta property="og:description" content={pageDescription} />
+      <meta property="og:type" content="video.other" />
+      <meta property="og:image" content={photoUrl(open.cover, 1200)} />
+      <meta name="twitter:card" content="summary_large_image" />
+    </>}
+    <link rel="icon" type="image/png" href="/nr-favicon.png" />
+  </head>
+  <body data-open-project={open?._id}>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label={`${settings.brandName} home`}><img src="/nr-favicon.png" alt="" width="64" height="64" /></a>
+      <nav aria-label="Main navigation"><a href="/projects/" aria-current="page">Work</a><a href="/#services">Services</a><a href="/#about">Contact</a></nav>
+    </header>
+    <main id="main" class="projects-page">
+      <div class="projects-bar">
+        <h1>All projects</h1>
+        <div class="projects-tools">
+          <button type="button" class="category-chip" aria-controls="projects-grid" hidden><span class="category-name"></span><span aria-hidden="true">✕</span><span class="visually-hidden">Clear filter</span></button>
+          <div class="filter-pill" role="group" aria-label="Search and filter projects" hidden>
+            <div class="search-box">
+              <button type="button" class="tool-button search-toggle" aria-label="Search projects" aria-expanded="false" aria-controls="project-search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg></button>
+              <input type="search" id="project-search" class="project-search" placeholder="Search projects" aria-label="Search projects by title, client or category" aria-controls="projects-grid" autocomplete="off" tabindex="-1" />
+            </div>
+            {kinds.map(item => <div class="kind-menu" data-kind={item.kind}>
+              <button type="button" class="tool-button" data-filter={item.kind} aria-pressed="false" aria-expanded="false" aria-controls={`${item.kind}-categories`} aria-label={`${item.label} projects (${item.count})`}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true" set:html={icons[item.kind]} /></button>
+              <div class="kind-dropdown" id={`${item.kind}-categories`} role="group" aria-label={`${item.label} categories`}>
+                <button type="button" data-kind={item.kind} data-sub="all" data-title={`All ${item.label.toLowerCase()}s`} aria-pressed="false" aria-controls="projects-grid">All {item.label.toLowerCase()}s<span class="subfilter-count">{item.count}</span></button>
+                {item.subs.map(sub => <button type="button" data-kind={item.kind} data-sub={sub.value} data-title={sub.title} aria-pressed="false" aria-controls="projects-grid">{sub.title}<span class="subfilter-count">{sub.count}</span></button>)}
+              </div>
+            </div>)}
+          </div>
+          <p id="project-count" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">{projects.length} {projects.length === 1 ? 'project' : 'projects'}</p>
+        </div>
+      </div>
+      {demo && <p class="sample-notice">Local layout preview with sample projects.</p>}
+      <div id="projects-grid" class="projects-grid" data-client-titles={JSON.stringify(clientTitles)}>{projects.map((project, index) => <ProjectCard project={project} index={index} demo={demo} variant="tile" clients={projectClients(project, clientNames)} />)}</div>
+      <p id="projects-empty" class="empty-state" hidden={projects.length > 0}>New projects are on the way.</p>
+      <div class="focus-blur focus-blur-top" aria-hidden="true"></div>
+      <div class="focus-blur focus-blur-bottom" aria-hidden="true"></div>
+    </main>
+    <ProjectDialog projects={projects} />
+    <script src="../scripts/project-grid.ts"></script>
+    <script src="../scripts/motion.ts"></script>
+  </body>
+</html>

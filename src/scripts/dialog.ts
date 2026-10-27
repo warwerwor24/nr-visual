@@ -9,6 +9,10 @@ const panelContent = dialog.querySelector<HTMLDivElement>('.dialog-content')!;
 const media = document.querySelector<HTMLDivElement>('#dialog-media')!;
 const title = document.querySelector<HTMLElement>('#dialog-title')!;
 const description = document.querySelector<HTMLElement>('#dialog-description')!;
+const meta = document.querySelector<HTMLDListElement>('#dialog-meta')!;
+// While a project is open the address bar shows its /projects/<slug>/ link, so visitors can copy and share it.
+let returnUrl: string | null = null;
+let returnTitle: string | null = null;
 const status = document.querySelector<HTMLElement>('#media-status')!;
 const templates = [...document.querySelectorAll<HTMLTemplateElement>('template[data-project-template]')];
 const thumbnails = [...dialog.querySelectorAll<HTMLButtonElement>('[data-dialog-project]')];
@@ -185,6 +189,22 @@ function showProject(index: number, switching = false) {
   media.classList.toggle('has-video', Boolean(template.dataset.embed));
   title.textContent = template.dataset.title || '';
   description.textContent = template.dataset.description || '';
+  const year = template.dataset.completedAt?.slice(0, 4) || '';
+  meta.replaceChildren(...([['Client', template.dataset.client], ['Role', template.dataset.role], ['Year', year]] as const)
+    .filter(([, value]) => value)
+    .map(([label, value]) => {
+      const row = document.createElement('div');
+      const term = document.createElement('dt');
+      const detail = document.createElement('dd');
+      term.textContent = label;
+      detail.textContent = value!;
+      row.append(term, detail);
+      return row;
+    }));
+  if (template.dataset.slug) {
+    returnUrl ??= location.pathname + location.search + location.hash;
+    history.replaceState(history.state, '', `/projects/${template.dataset.slug}/`);
+  }
   arrows.forEach(button => { button.disabled = templates.length < 2; });
   thumbnails.forEach(button => { button.setAttribute('aria-pressed', String(button.dataset.dialogProject === template.dataset.projectTemplate)); });
   if (template.dataset.embed) {
@@ -398,5 +418,18 @@ dialog.addEventListener('close', () => {
   focusButton.setAttribute('aria-label', 'Enter focus mode');
   focusButton.title = 'Focus mode';
   clearMedia();
+  if (returnUrl !== null) history.replaceState(history.state, '', returnUrl);
+  if (returnTitle !== null) document.title = returnTitle;
+  returnUrl = returnTitle = null;
   trigger?.focus({ preventScroll: true });
 });
+
+// /projects/<slug>/ pages render the archive with that project's dialog already open.
+const openOnLoad = templates.findIndex(item => item.dataset.projectTemplate === document.body.dataset.openProject);
+if (openOnLoad >= 0) {
+  returnUrl = '/projects/';
+  returnTitle = `All projects | ${document.title.split(' | ').at(-1)}`;
+  showProject(openOnLoad);
+  dialog.showModal();
+  thumbnails[openOnLoad]?.scrollIntoView({ block: 'nearest', inline: 'start', behavior: 'instant' });
+}

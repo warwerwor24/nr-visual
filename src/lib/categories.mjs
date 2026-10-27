@@ -10,6 +10,7 @@ export const categories = {
     { title: 'Music & Creative', value: 'music-creative' },
     { title: 'Opening & Bumper', value: 'opening-bumper' },
     { title: 'Motion Graphics', value: 'motion-graphics' },
+    { title: 'Personal', value: 'personal' },
   ],
   photo: [
     { title: 'Product', value: 'product' },

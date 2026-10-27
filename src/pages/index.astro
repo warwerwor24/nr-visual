@@ -1,12 +1,13 @@
 ---
 import '../styles/site.css';
-import { loadContent } from '../lib/content.mjs';
+import { loadCachedContent } from '../lib/content.mjs';
 import { whatsappUrl } from '../lib/media.mjs';
 import ProjectCard from '../components/ProjectCard.astro';
 import ProjectDialog from '../components/ProjectDialog.astro';
 import CoverImage from '../components/CoverImage.astro';
+import { photoUrl } from '../lib/cover.mjs';
 import { clientMatches, clientSlug } from '../lib/clients.mjs';
-const { demo, settings, highlights, collage, projects } = await loadContent({ ...import.meta.env, ...process.env });
+const { demo, settings, highlights, collage, projects } = await loadCachedContent({ ...import.meta.env, ...process.env });
 const logo = settings.logo || '/nrvisual-logo-transparent.png';
 const whatsapp = settings.whatsapp || whatsappUrl('628176383770');
 const instagram = settings.instagram || 'https://www.instagram.com/ivalrz/';
@@ -25,7 +26,10 @@ const portfolioBrands = [
 const clientLogos = [...(settings.clientLogos?.length ? settings.clientLogos : demo ? portfolioBrands : []), { alt: 'Euromedica', url: '/client-logos/euromedica.png', tone: 'euromedica' }]
   // A logo links to the archive only when at least one published project belongs to that client.
   .map(client => ({ ...client, href: projects.some(project => clientMatches(project, client.alt)) ? `/projects/?client=${clientSlug(client.alt)}` : undefined }));
-const poster = settings.heroPortrait?.url || '/hero-portrait-rim-light.jpg';
+const posterSource = settings.heroPortrait?.url || '/hero-portrait-rim-light.jpg';
+// The Studio upload is a 1.8 MB PNG; Sanity resizes it and serves WebP/AVIF instead.
+const poster = photoUrl(posterSource, 1920);
+const posterSrcset = poster !== posterSource ? [960, 1600, 2400].map(width => `${photoUrl(posterSource, width)} ${width}w`).join(', ') : undefined;
 const contactPhoto = settings.contactPhoto?.url ? settings.contactPhoto : { url: '/hero-portrait-rim-light.jpg', alt: 'Nouval against a blue backdrop with rim light around his hair.' };
 const shareImage = new URL(poster, Astro.site || Astro.url).href;
 // Empty slots are topped up with the newest other projects so both layouts always look complete.
@@ -70,7 +74,7 @@ const services = [
       <section class="hero" id="top" aria-labelledby="hero-title">
         {settings.heroVideo
           ? <video class="hero-media" src={settings.heroVideo} poster={poster} muted loop playsinline preload="metadata" aria-label="Showreel of selected work"></video>
-          : <img class="hero-media" src={poster} alt="" width="2752" height="1536" fetchpriority="high" />}
+          : <img class="hero-media" src={poster} srcset={posterSrcset} sizes={posterSrcset ? '100vw' : undefined} alt="" width="2752" height="1536" fetchpriority="high" />}
         <div class="hero-copy">
           <h1 id="hero-title">{settings.heroText}</h1>
           <div class="hero-meta">

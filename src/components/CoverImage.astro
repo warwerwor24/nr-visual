@@ -1,10 +1,13 @@
 ---
 import { coverPresentation } from '../lib/cover.mjs';
-const { project, variant = 'work', width = 720, height = 405, loading = 'lazy' } = Astro.props;
+const { project, variant = 'work', width = 720, height = 405, loading = 'lazy', sizes = `${width}px` } = Astro.props;
 const gallery = variant === 'gallery' && project.galleryCover?.asset?._ref && project.galleryCover.url ? project.galleryCover : null;
 const alt = Astro.props.alt ?? gallery?.alt ?? project.alt;
 const cover = coverPresentation(project, Math.max(width, 960), variant, width / height);
+// Smaller crops for small cards; non-Sanity covers return the same URL and the browser keeps the 960 one.
+const small = coverPresentation(project, 480, variant, width / height).src;
+const srcset = small !== cover.src ? `${small} 480w, ${cover.src} ${Math.max(width, 960)}w` : undefined;
 const lqip = gallery ? gallery.lqip : project.lqip;
 ---
-<span class="lqip" style={lqip ? `background-image:url(${lqip})` : undefined}><img src={cover.src} alt={alt} width={width} height={height} loading={loading} decoding="async" data-fade style={`object-position:${cover.position}`} /></span>
+<span class="lqip" style={lqip ? `background-image:url(${lqip})` : undefined}><img src={cover.src} srcset={srcset} sizes={srcset ? sizes : undefined} alt={alt} width={width} height={height} loading={loading} decoding="async" data-fade style={`object-position:${cover.position}`} /></span>
 <script src="../scripts/image-fade.ts"></script>

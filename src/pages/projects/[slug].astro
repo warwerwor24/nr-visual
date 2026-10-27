@@ -1,0 +1,12 @@
+---
+import ProjectsPage from '../../components/ProjectsPage.astro';
+import { loadCachedContent } from '../../lib/content.mjs';
+import { projectSlugs } from '../../lib/project-url.mjs';
+
+export async function getStaticPaths() {
+  const { projects } = await loadCachedContent({ ...import.meta.env, ...process.env });
+  const slugs = projectSlugs(projects);
+  return projects.map(project => ({ params: { slug: slugs.get(project._id) }, props: { open: project } }));
+}
+---
+<ProjectsPage open={Astro.props.open} />

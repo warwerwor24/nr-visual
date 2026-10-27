@@ -2,7 +2,11 @@
 import { driveMedia, videoAspectRatio } from '../lib/media.mjs';
 import CoverImage from './CoverImage.astro';
 import { photoUrl } from '../lib/cover.mjs';
+import { loadCachedContent } from '../lib/content.mjs';
+import { projectSlugs } from '../lib/project-url.mjs';
 const { projects } = Astro.props;
+// Slugs come from the full archive so every page links a project to the same /projects/<slug>/ URL.
+const slugs = projectSlugs((await loadCachedContent({ ...import.meta.env, ...process.env })).projects);
 ---
 <dialog id="project-dialog" aria-labelledby="dialog-title">
   <button class="dialog-focus" aria-label="Enter focus mode" aria-pressed="false" title="Focus mode"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg></button>
@@ -12,7 +16,7 @@ const { projects } = Astro.props;
     <div class="dialog-shell"><header class="dialog-header"><h2 id="dialog-title"></h2></header>
     <div id="dialog-media"></div>
     </div>
-    <section class="dialog-info" aria-labelledby="description-title"><h3 id="description-title">Description</h3><p id="dialog-description"></p><p id="media-status" class="visually-hidden" role="status"></p></section>
+    <section class="dialog-info" aria-labelledby="description-title"><dl id="dialog-meta" class="dialog-meta"></dl><h3 id="description-title">Description</h3><p id="dialog-description"></p><p id="media-status" class="visually-hidden" role="status"></p></section>
   </div>
   <div class="dialog-navigation">
     <div class="dialog-arrows">
@@ -39,7 +43,7 @@ const { projects } = Astro.props;
     <ul class="photo-filmstrip" aria-label="Photos in this album"></ul>
   </section>
 </dialog>
-<div hidden id="project-templates">{projects.map(project => <template data-project-template={project._id} data-kind={project.kind} data-title={project.title} data-completed-at={project.completedAt || ''} data-description={project.description || ''} data-ratio={videoAspectRatio(project.videoFormat)} data-embed={project.kind === 'video' ? driveMedia(project.driveUrl)?.embed || '' : ''}>
+<div hidden id="project-templates">{projects.map(project => <template data-project-template={project._id} data-kind={project.kind} data-title={project.title} data-slug={slugs.get(project._id) || ''} data-client={project.client || ''} data-role={project.role || ''} data-completed-at={project.completedAt || ''} data-description={project.description || ''} data-ratio={videoAspectRatio(project.videoFormat)} data-embed={project.kind === 'video' ? driveMedia(project.driveUrl)?.embed || '' : ''}>
   {(!driveMedia(project.driveUrl) || project.kind === 'photo') && <div class="photo-gallery">{(project.kind === 'photo' ? project.photos : [{ url: project.cover, alt: project.alt }]).filter(photo => photo?.url).map((photo, index) => <button type="button" class="photo-tile" style={photo.lqip ? `background-image:url(${photo.lqip})` : undefined} data-photo-index={index} aria-label={`View photo ${index + 1}: ${photo.alt || project.title}`}><img src={photoUrl(photo.url)} data-full-src={photoUrl(photo.url, 2000)} alt={photo.alt} width={photo.width || undefined} height={photo.height || undefined} loading="lazy" decoding="async" data-fade /></button>)}</div>}
 </template>)}</div>
 <script src="../scripts/dialog.ts"></script>
