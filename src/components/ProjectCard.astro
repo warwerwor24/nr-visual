@@ -4,7 +4,7 @@ import { categoryTitle } from '../lib/categories.mjs';
 const { project, index = 0, demo = false, variant = 'card', clients } = Astro.props;
 const tile = variant === 'tile';
 const number = String(index + 1).padStart(2, '0');
-const label = [project.category, ...(project.categories ?? []).map(value => categoryTitle(project.kind, value))].filter(Boolean).join(' · ');
+const label = (project.categories ?? []).map(value => categoryTitle(project.kind, value)).filter(Boolean).join(' · ');
 const search = [project.title, project.client, label].filter(Boolean).join(' ').toLowerCase();
 ---
 <button class={tile ? 'work-card project-tile' : 'work-card'} data-project={project._id} data-kind={project.kind} data-category={project.category} data-categories={(project.categories ?? []).join(' ')} data-clients={clients?.join(' ')} data-search={tile ? search : undefined} data-number={number} aria-label={`${project.kind === 'video' ? 'Watch' : 'Open'} ${project.title}${demo ? ', sample project' : ''}`}>

@@ -472,3 +472,5 @@ dialog.is-photo-view{padding:0;background:transparent;overflow:hidden}
 /* Logos wrap as centered rows, so a short last row sits in the middle. */
 .client-logos{display:flex;flex-wrap:wrap;justify-content:center}.client-logos li{flex:0 0 calc((100% - 48px) / 4)}
 @media(max-width:1000px){.client-logos li{flex-basis:calc((100% - 16px) / 2)}}
+/* Featured cards show only the title; the archive tiles keep their labels. */
+.work-card:not(.project-tile) :is(.card-top,.play){display:none}.work-card:not(.project-tile) .cover-frame:after{background:linear-gradient(180deg,transparent 55%,var(--shade) 100%)}
