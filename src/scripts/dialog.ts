@@ -19,7 +19,9 @@ const thumbnails = [...dialog.querySelectorAll<HTMLButtonElement>('[data-dialog-
 const arrows = [...dialog.querySelectorAll<HTMLButtonElement>('.dialog-arrow')];
 const focusButton = dialog.querySelector<HTMLButtonElement>('.dialog-focus')!;
 const shell = dialog.querySelector<HTMLElement>('.dialog-shell')!;
-const focusExtras = [...dialog.querySelectorAll<HTMLElement>('.dialog-gallery, .dialog-info, .dialog-arrow')];
+const focusExtras = [...dialog.querySelectorAll<HTMLElement>('.dialog-gallery, .dialog-info, .dialog-info-toggle, .dialog-arrow')];
+const info = dialog.querySelector<HTMLElement>('.dialog-info')!;
+const infoToggle = dialog.querySelector<HTMLButtonElement>('.dialog-info-toggle')!;
 let focusChanging = false;
 let focusAnimations: Animation[] = [];
 let activeIndex = 0;
@@ -42,7 +44,7 @@ let photoAnimations: Animation[] = [];
 function showPhoto(index: number) {
   if (index < 0 || index >= albumPhotos.length) return;
   const opening = photoViewer.hidden;
-  const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const animate = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   const source = opening ? media.querySelector<HTMLImageElement>(`[data-photo-index="${index}"] img`)?.getBoundingClientRect() : undefined;
   photoAnimations.forEach(animation => animation.cancel());
   photoAnimations = [];
@@ -81,7 +83,7 @@ function showPhoto(index: number) {
     dialog.scrollTop = 0;
     panelContent.scrollTop = albumScroll;
     photoBack.focus();
-    if (motion) {
+    if (animate) {
       photoAnimations = [...photoViewer.querySelectorAll<HTMLElement>('.photo-view-header, .photo-peek, .photo-step, .photo-filmstrip, .photo-view-status')].map(element => element.animate([
         { opacity: 0 }, { opacity: getComputedStyle(element).opacity },
       ], { duration: motion('--dur-base'), easing: motionEase(), fill: 'both' }));
@@ -92,11 +94,11 @@ function showPhoto(index: number) {
   photoImage.hidden = false;
   photoImage.alt = albumPhotos[index].alt;
   photoStatus.textContent = 'Loading photo…';
-  photoImage.style.opacity = opening && motion ? '0' : '';
+  photoImage.style.opacity = opening && animate ? '0' : '';
   photoImage.onload = () => {
     photoStatus.textContent = `${index + 1} / ${albumPhotos.length}`;
     photoImage.style.opacity = '';
-    if (!opening || !motion) return;
+    if (!opening || !animate) return;
     const target = photoImage.getBoundingClientRect();
     const transform = source && source.width && source.height && target.width && target.height
       ? `translate(${source.left - target.left}px, ${source.top - target.top}px) scale(${source.width / target.width}, ${source.height / target.height})`
@@ -189,6 +191,7 @@ function showProject(index: number, switching = false) {
   media.classList.toggle('has-video', Boolean(template.dataset.embed));
   title.textContent = template.dataset.title || '';
   description.textContent = template.dataset.description || '';
+  infoToggle.hidden = !description.textContent;
   const year = template.dataset.completedAt?.slice(0, 4) || '';
   meta.replaceChildren(...([['Client', template.dataset.client], ['Role', template.dataset.role], ['Year', year]] as const)
     .filter(([, value]) => value)
@@ -363,16 +366,35 @@ async function closeProject() {
   }
 }
 document.querySelector('.dialog-close')!.addEventListener('click', closeProject);
+// Phones keep the project details folded so the player gets the screen; the player resizes smoothly when they open.
+function setInfoOpen(open: boolean) {
+  dialog.classList.toggle('is-info-open', open);
+  infoToggle.setAttribute('aria-expanded', String(open));
+  infoToggle.querySelector('span')!.textContent = open ? 'Hide description' : 'Show description';
+}
+infoToggle.addEventListener('click', () => {
+  const open = !dialog.classList.contains('is-info-open');
+  const before = shell.getBoundingClientRect();
+  setInfoOpen(open);
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const after = shell.getBoundingClientRect();
+  shell.animate([
+    { transform: `translate(${before.left - after.left}px, ${before.top - after.top}px) scale(${before.width / after.width}, ${before.height / after.height})`, transformOrigin: 'top left' },
+    { transform: 'none', transformOrigin: 'top left' },
+  ], { duration: motion('--dur-base'), easing: motionEase() });
+  if (open) info.animate([{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }], { duration: motion('--dur-base'), easing: motionEase() });
+});
 focusButton.addEventListener('click', async () => {
-  const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (focusChanging || dialog.classList.contains('is-closing') || (motion && dialog.classList.contains('is-opening'))) return;
+  // Named `animate`, not `motion`: shadowing the motion() helper made every focus toggle throw.
+  const animate = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (focusChanging || dialog.classList.contains('is-closing') || (animate && dialog.classList.contains('is-opening'))) return;
   focusChanging = true;
   dialog.classList.add('is-focus-changing');
   const focused = !dialog.classList.contains('is-focused');
   const visibleExtras = focusExtras.filter(element => element.getClientRects().length);
   const before = shell.getBoundingClientRect();
   try {
-    if (motion && focused) {
+    if (animate && focused) {
       focusAnimations = visibleExtras.map(element => element.animate([
         { opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(6px)' },
       ], { duration: motion('--dur-fast'), easing: motionEase(), fill: 'forwards' }));
@@ -383,7 +405,7 @@ focusButton.addEventListener('click', async () => {
     focusButton.setAttribute('aria-pressed', String(focused));
     focusButton.setAttribute('aria-label', focused ? 'Exit focus mode' : 'Enter focus mode');
     focusButton.title = focused ? 'Exit focus mode' : 'Focus mode';
-    if (motion) {
+    if (animate) {
       const after = shell.getBoundingClientRect();
       const transform = `translate(${before.left - after.left}px, ${before.top - after.top}px) scale(${before.width / after.width}, ${before.height / after.height})`;
       focusAnimations.push(shell.animate([
@@ -414,6 +436,7 @@ dialog.addEventListener('close', () => {
   if (dialog.open) return;
   dialog.classList.remove('is-opening', 'is-closing');
   dialog.classList.remove('is-focused');
+  setInfoOpen(false);
   focusButton.setAttribute('aria-pressed', 'false');
   focusButton.setAttribute('aria-label', 'Enter focus mode');
   focusButton.title = 'Focus mode';

@@ -16,7 +16,8 @@ const slugs = projectSlugs((await loadCachedContent({ ...import.meta.env, ...pro
     <div class="dialog-shell"><header class="dialog-header"><h2 id="dialog-title"></h2></header>
     <div id="dialog-media"></div>
     </div>
-    <section class="dialog-info" aria-labelledby="description-title"><dl id="dialog-meta" class="dialog-meta"></dl><h3 id="description-title">Description</h3><p id="dialog-description"></p><p id="media-status" class="visually-hidden" role="status"></p></section>
+    <button class="dialog-info-toggle" type="button" aria-expanded="false" aria-controls="dialog-info" hidden><span>Show description</span><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" /></svg></button>
+    <section class="dialog-info" id="dialog-info" aria-labelledby="description-title"><dl id="dialog-meta" class="dialog-meta"></dl><h3 id="description-title">Description</h3><p id="dialog-description"></p><p id="media-status" class="visually-hidden" role="status"></p></section>
   </div>
   <div class="dialog-navigation">
     <div class="dialog-arrows">
