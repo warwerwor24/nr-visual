@@ -3,21 +3,22 @@ import '../../styles/site.css';
 import '../../styles/links.css';
 import { loadContent } from '../../lib/content.mjs';
 import { whatsappUrl } from '../../lib/media.mjs';
-import { projectLabel } from '../../lib/categories.mjs';
-import CoverImage from '../../components/CoverImage.astro';
-import ProjectDialog from '../../components/ProjectDialog.astro';
+import { photoUrl } from '../../lib/cover.mjs';
 
-const { demo, settings, highlights } = await loadContent({ ...import.meta.env, ...process.env });
+const { demo, settings } = await loadContent({ ...import.meta.env, ...process.env });
 const logo = settings.logo || '/nrvisual-logo-transparent.png';
 const email = 'nouvalrla@gmail.com';
+// The banner is always portrait here, so the phone cut of the showreel wins when it exists.
+const showreel = settings.heroVideoMobile || settings.heroVideo;
+const poster = photoUrl(settings.heroPortrait?.url || '/hero-portrait-rim-light.jpg', 960);
 const links = [
   { label: 'WhatsApp', href: settings.whatsapp || whatsappUrl('628176383770'), detail: "Let's talk about your vision", primary: true },
-  { label: 'Website', href: '/', detail: 'Slide in for more of my works', website: true },
+  { label: 'Website', href: '/', detail: 'Slide in for more of my works' },
   { label: 'Instagram', href: settings.instagram || 'https://www.instagram.com/ivalrz/', detail: '@ivalrz' },
   { label: 'LinkedIn', href: settings.linkedin || 'https://www.linkedin.com/in/nouvalrla/', detail: 'Get to know my career' },
   { label: 'Email', href: `mailto:${email}`, detail: email },
 ];
-const description = `Featured projects and contact links for ${settings.brandName}.`;
+const description = `Showreel and contact links for ${settings.brandName}.`;
 const shareImage = new URL('/hero-portrait-rim-light.jpg', Astro.site || Astro.url).href;
 ---
 <!doctype html>
@@ -42,41 +43,30 @@ const shareImage = new URL('/hero-portrait-rim-light.jpg', Astro.site || Astro.u
   <body class="links-body">
     <a class="skip-link" href="#main">Skip to content</a>
     <main id="main" class="links-page">
-      <header class="links-intro">
-        <h1><img src={logo} alt={settings.brandName} width="1636" height="310" fetchpriority="high" /></h1>
-        <p>{settings.heroText}</p>
-      </header>
+      <h1 class="links-logo"><img src={logo} alt={settings.brandName} width="1636" height="310" fetchpriority="high" /></h1>
 
-      <section class="links-featured" aria-labelledby="featured-title">
-        <div class="links-featured-heading">
-          <h2 id="featured-title">Featured projects</h2>
-          {highlights.length > 1 && <span class="links-count" aria-live="polite" aria-atomic="true" data-carousel-count>1 / {highlights.length}</span>}
+      <section class="links-reel" aria-label="Showreel">
+        {showreel
+          ? <video class="hero-media" poster={poster} muted loop playsinline preload="metadata" aria-label="Showreel of selected work"><source src={showreel} /></video>
+          : <img class="hero-media" src={poster} alt="" width="960" height="1200" />}
+        <div class="links-reel-meta">
+          <span>NRVISUAL's Creative Works</span>
+          {showreel && <button class="hero-toggle" type="button" aria-label="Pause showreel" hidden>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path class="icon-pause" d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor" /><path class="icon-play" d="m8 5 11 7-11 7Z" fill="currentColor" /></svg>
+          </button>}
         </div>
-        {highlights.length > 0 ? <div class="links-carousel-frame"><ul class:list={['links-carousel', { 'links-carousel-single': highlights.length === 1 }]} aria-label="Featured projects">
-          {highlights.map((project, index) => <li>
-            <button class="links-project" data-project={project._id} aria-label={`${project.kind === 'video' ? 'Watch' : 'Open'} ${project.title}${demo ? ', sample project' : ''}`}>
-              <span class="links-project-cover"><CoverImage project={project} loading={index === 0 ? 'eager' : 'lazy'} /></span>
-              <span class="links-project-copy"><span class="links-project-title">{project.title}</span><span class="links-project-category">{demo ? 'Sample project' : projectLabel(project)}</span></span>
-            </button>
-          </li>)}
-        </ul>
-        {highlights.length > 1 &&
-          <div class="links-carousel-controls" hidden>
-            <button type="button" data-carousel-prev aria-label="Previous featured project" disabled><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m14 6-6 6 6 6" /></svg></button>
-            <button type="button" data-carousel-next aria-label="Next featured project"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m10 6 6 6-6 6" /></svg></button>
-          </div>
-        }
-        </div> : <p class="links-empty">New projects are on the way. Visit the portfolio or get in touch below.</p>}
       </section>
 
-      <nav class="links-destinations" aria-label="Portfolio and contact links">
-        {links.map(link => <a class:list={['links-destination', { 'links-destination-primary': link.primary, 'links-destination-website': link.website }]} href={link.href} target={link.href.startsWith('https:') ? '_blank' : undefined} rel={link.href.startsWith('https:') ? 'noopener noreferrer' : undefined}>
-          <span class="links-destination-label">{link.label}</span><span class="links-destination-detail">{link.detail}</span>
+      <nav class="links-destinations" aria-labelledby="links-title">
+        <h2 class="section-label" id="links-title"><span>Get in touch</span><span aria-hidden="true">{String(links.length).padStart(2, '0')}</span></h2>
+        {links.map((link, index) => <a class:list={['links-destination', { 'links-destination-primary': link.primary }]} href={link.href} target={link.href.startsWith('https:') ? '_blank' : undefined} rel={link.href.startsWith('https:') ? 'noopener noreferrer' : undefined}>
+          <span class="links-destination-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+          <span class="links-destination-label">{link.label}</span>
+          <span class="links-destination-detail">{link.detail}</span>
         </a>)}
       </nav>
       <footer class="links-footer"><p>© {new Date().getFullYear()} {settings.brandName}</p></footer>
     </main>
-    <ProjectDialog projects={highlights} />
-    <script src="../../scripts/links-carousel.ts"></script>
+    <script src="../../scripts/hero-video.ts"></script>
   </body>
 </html>
