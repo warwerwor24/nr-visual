@@ -1,7 +1,7 @@
 ---
 import { driveMedia, videoAspectRatio } from '../lib/media.mjs';
 import CoverImage from './CoverImage.astro';
-import { photoUrl } from '../lib/cover.mjs';
+import { coverPresentation, photoUrl } from '../lib/cover.mjs';
 import { loadCachedContent } from '../lib/content.mjs';
 import { projectSlugs } from '../lib/project-url.mjs';
 const { projects } = Astro.props;
@@ -44,7 +44,7 @@ const slugs = projectSlugs((await loadCachedContent({ ...import.meta.env, ...pro
     <ul class="photo-filmstrip" aria-label="Photos in this album"></ul>
   </section>
 </dialog>
-<div hidden id="project-templates">{projects.map(project => <template data-project-template={project._id} data-kind={project.kind} data-title={project.title} data-slug={slugs.get(project._id) || ''} data-client={project.client || ''} data-role={project.role || ''} data-completed-at={project.completedAt || ''} data-description={project.description || ''} data-ratio={videoAspectRatio(project.videoFormat)} data-embed={project.kind === 'video' ? driveMedia(project.driveUrl)?.embed || '' : ''}>
+<div hidden id="project-templates">{projects.map(project => <template data-project-template={project._id} data-kind={project.kind} data-title={project.title} data-slug={slugs.get(project._id) || ''} data-client={project.client || ''} data-role={project.role || ''} data-completed-at={project.completedAt || ''} data-description={project.description || ''} data-ratio={videoAspectRatio(project.videoFormat)} data-embed={project.kind === 'video' ? driveMedia(project.driveUrl)?.embed || '' : ''} data-poster={project.kind === 'video' && project.cover ? coverPresentation(project, 960, 'work', videoAspectRatio(project.videoFormat)).src : ''}>
   {(!driveMedia(project.driveUrl) || project.kind === 'photo') && <div class="photo-gallery">{(project.kind === 'photo' ? project.photos : [{ url: project.cover, alt: project.alt }]).filter(photo => photo?.url).map((photo, index) => <button type="button" class="photo-tile" style={photo.lqip ? `background-image:url(${photo.lqip})` : undefined} data-photo-index={index} aria-label={`View photo ${index + 1}: ${photo.alt || project.title}`}><img src={photoUrl(photo.url)} data-full-src={photoUrl(photo.url, 2000)} alt={photo.alt} width={photo.width || undefined} height={photo.height || undefined} loading="lazy" decoding="async" data-fade /></button>)}</div>}
 </template>)}</div>
 <script src="../scripts/dialog.ts"></script>

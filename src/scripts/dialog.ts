@@ -180,6 +180,25 @@ function imageErrors(root: ParentNode) {
 }
 imageErrors(document);
 
+function loadPlayer(template: HTMLTemplateElement) {
+  status.textContent = 'Loading video player…';
+  const iframe = document.createElement('iframe');
+  iframe.className = 'video-frame';
+  iframe.title = `Video: ${template.dataset.title}`;
+  iframe.allow = 'fullscreen';
+  iframe.allowFullscreen = true;
+  iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+  iframe.src = template.dataset.embed!;
+  iframe.addEventListener('load', () => {
+    if (!iframe.isConnected) return;
+    clearTimeout(loadTimer);
+    status.textContent = 'Video player loaded.';
+  });
+  loadTimer = setTimeout(() => { status.textContent = 'The video player is taking longer than usual to load.'; }, 12000);
+  media.replaceChildren(iframe);
+  iframe.focus({ preventScroll: true });
+}
+
 function showProject(index: number, switching = false) {
   clearMedia();
   activeIndex = index;
@@ -210,22 +229,24 @@ function showProject(index: number, switching = false) {
   }
   arrows.forEach(button => { button.disabled = templates.length < 2; });
   thumbnails.forEach(button => { button.setAttribute('aria-pressed', String(button.dataset.dialogProject === template.dataset.projectTemplate)); });
-  if (template.dataset.embed) {
-    status.textContent = 'Loading video player…';
-    const iframe = document.createElement('iframe');
-    iframe.className = 'video-frame';
-    iframe.title = `Video: ${template.dataset.title}`;
-    iframe.allow = 'fullscreen';
-    iframe.allowFullscreen = true;
-    iframe.referrerPolicy = 'strict-origin-when-cross-origin';
-    iframe.src = template.dataset.embed;
-    iframe.addEventListener('load', () => {
-      if (!iframe.isConnected) return;
-      clearTimeout(loadTimer);
-      status.textContent = 'Video player loaded.';
-    });
-    loadTimer = setTimeout(() => { status.textContent = 'The video player is taking longer than usual to load.'; }, 12000);
-    media.append(iframe);
+  if (template.dataset.embed && template.dataset.poster && matchMedia('(max-width: 900px)').matches) {
+    // Phones get the cover first: play fills the screen (focus mode), then the Drive player loads for its own play tap.
+    const poster = document.createElement('button');
+    poster.type = 'button';
+    poster.className = 'video-poster';
+    poster.setAttribute('aria-label', `Play ${template.dataset.title}`);
+    const image = document.createElement('img');
+    image.src = template.dataset.poster;
+    image.alt = '';
+    poster.append(image);
+    poster.insertAdjacentHTML('beforeend', '<span class="video-poster-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28"><path d="m8 5 11 7-11 7Z" fill="currentColor" /></svg></span>');
+    poster.addEventListener('click', () => {
+      if (!dialog.classList.contains('is-focused')) focusButton.click();
+      loadPlayer(template);
+    }, { once: true });
+    media.append(poster);
+  } else if (template.dataset.embed) {
+    loadPlayer(template);
   } else {
     media.append(template.content.cloneNode(true));
     imageErrors(media);
