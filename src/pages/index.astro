@@ -112,6 +112,7 @@ const services = [
               const width = landscape ? 480 : 320;
               return <button class={`collage-card position-${index}${landscape ? ' is-landscape' : ''}`} data-project={project._id} aria-label={`Open ${project.title}${demo ? ', sample project' : ''}`}>
                 <CoverImage project={project} width={width} height={size ? Math.round(width * size.height / size.width) : 400} />
+                {project.kind === 'video' && project.previewClip && <video class="hover-clip" data-src={project.previewClip} muted loop playsinline preload="none" aria-hidden="true"></video>}
               </button>;
             })}
           </div>

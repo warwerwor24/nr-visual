@@ -1,8 +1,8 @@
 // Video cards play their short preview clip on hover or keyboard focus. Touch screens and reduced motion keep the still cover.
 // The clip has no src until the first hover, so the grid downloads nothing up front.
 if (matchMedia('(hover: hover)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  document.querySelectorAll<HTMLVideoElement>('.work-card .hover-clip').forEach(clip => {
-    const card = clip.closest('.work-card')!;
+  document.querySelectorAll<HTMLVideoElement>('.work-card .hover-clip, .collage-card .hover-clip').forEach(clip => {
+    const card = clip.closest('.work-card, .collage-card')!;
     const start = () => {
       if (!clip.src) clip.src = clip.dataset.src!;
       clip.play().catch(() => {});
