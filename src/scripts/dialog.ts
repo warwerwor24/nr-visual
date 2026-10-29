@@ -180,8 +180,26 @@ function imageErrors(root: ParentNode) {
 }
 imageErrors(document);
 
-function loadPlayer(template: HTMLTemplateElement) {
+function loadPlayer(template: HTMLTemplateElement, autoplay = false) {
   status.textContent = 'Loading video player…';
+  if (template.dataset.video) {
+    const video = document.createElement('video');
+    video.className = 'video-frame';
+    video.title = `Video: ${template.dataset.title}`;
+    video.controls = true;
+    video.playsInline = true;
+    video.preload = 'metadata';
+    if (template.dataset.poster) video.poster = template.dataset.poster;
+    video.src = template.dataset.video;
+    video.addEventListener('loadedmetadata', () => { clearTimeout(loadTimer); status.textContent = 'Video player loaded.'; }, { once: true });
+    video.addEventListener('error', () => { clearTimeout(loadTimer); status.textContent = 'The video could not be loaded.'; }, { once: true });
+    loadTimer = setTimeout(() => { status.textContent = 'The video player is taking longer than usual to load.'; }, 12000);
+    media.replaceChildren(video);
+    video.focus({ preventScroll: true });
+    // The poster tap is a user gesture, so playback with sound is allowed.
+    if (autoplay) video.play().catch(() => {});
+    return;
+  }
   const iframe = document.createElement('iframe');
   iframe.className = 'video-frame';
   iframe.title = `Video: ${template.dataset.title}`;
@@ -207,7 +225,7 @@ function showProject(index: number, switching = false) {
   albumPhotos = [...template.content.querySelectorAll<HTMLImageElement>('.photo-gallery img')];
   const ratio = Number(template.dataset.ratio);
   dialog.style.setProperty('--media-ratio', String(Number.isFinite(ratio) && ratio > 0 ? ratio : 16 / 9));
-  media.classList.toggle('has-video', Boolean(template.dataset.embed));
+  media.classList.toggle('has-video', Boolean(template.dataset.embed || template.dataset.video));
   title.textContent = template.dataset.title || '';
   description.textContent = template.dataset.description || '';
   infoToggle.hidden = !description.textContent;
@@ -229,8 +247,8 @@ function showProject(index: number, switching = false) {
   }
   arrows.forEach(button => { button.disabled = templates.length < 2; });
   thumbnails.forEach(button => { button.setAttribute('aria-pressed', String(button.dataset.dialogProject === template.dataset.projectTemplate)); });
-  if (template.dataset.embed && template.dataset.poster && matchMedia('(max-width: 900px)').matches) {
-    // Phones get the cover first: play fills the screen (focus mode), then the Drive player loads for its own play tap.
+  if ((template.dataset.embed || template.dataset.video) && template.dataset.poster && matchMedia('(max-width: 900px)').matches) {
+    // Phones get the cover first: play fills the screen (focus mode), then the player loads (Drive needs its own play tap).
     const poster = document.createElement('button');
     poster.type = 'button';
     poster.className = 'video-poster';
@@ -242,10 +260,10 @@ function showProject(index: number, switching = false) {
     poster.insertAdjacentHTML('beforeend', '<span class="video-poster-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28"><path d="m8 5 11 7-11 7Z" fill="currentColor" /></svg></span>');
     poster.addEventListener('click', () => {
       if (!dialog.classList.contains('is-focused')) focusButton.click();
-      loadPlayer(template);
+      loadPlayer(template, true);
     }, { once: true });
     media.append(poster);
-  } else if (template.dataset.embed) {
+  } else if (template.dataset.embed || template.dataset.video) {
     loadPlayer(template);
   } else {
     media.append(template.content.cloneNode(true));

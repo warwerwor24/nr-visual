@@ -1,6 +1,6 @@
 import { defineConfig, defineField, defineType } from 'sanity';
 import { structureTool } from 'sanity/structure';
-import { driveMedia, socialUrl, whatsappUrl } from './src/lib/media.mjs';
+import { driveMedia, socialUrl, videoFileUrl, whatsappUrl } from './src/lib/media.mjs';
 import { categories, projectLabel } from './src/lib/categories.mjs';
 import { VideoCoverInput } from './sanity/VideoCoverInput';
 import { GalleryCoverInput } from './sanity/GalleryCoverInput';
@@ -39,6 +39,7 @@ const project = defineType({
     ] }),
     defineField({ name: 'galleryCover', group: 'covers', title: 'Gallery cover', description: 'Optional separate crop for the yellow gallery (4:5). Use the WORK image, then adjust its Crop/Hotspot here. Leave empty to use the WORK cover.', type: 'image', options: { hotspot: { previews: [{title: 'Yellow gallery', aspectRatio: .8}] } }, components: { input: GalleryCoverInput }, fields: imageFields, validation: rule => rule.assetRequired() }),
     defineField({ name: 'driveUrl', group: 'video', title: 'Google Drive video link', description: 'Use an HTTPS file sharing link. Set the video to Anyone with the link / Viewer and test without signing in.', type: 'url', hidden: ({ document }) => document?.kind !== 'video', validation: rule => rule.custom((value, context) => context.document?.kind !== 'video' || driveMedia(value) ? true : 'Paste a valid https://drive.google.com/file/d/…/view link.') }),
+    defineField({ name: 'videoUrl', group: 'video', title: 'Video file link (Cloudflare R2)', description: 'Optional. Public HTTPS link to an MP4 (H.264, fast start) or WebM file. When set, the popup plays it in the browser player instead of Drive. The Drive link is still used to pick covers.', type: 'url', hidden: ({ document }) => document?.kind !== 'video', validation: rule => rule.custom(value => !value || videoFileUrl(value) ? true : 'Paste a public https:// link ending in .mp4, .m4v or .webm.') }),
     defineField({ name: 'previewClip', group: 'video', title: 'Hover preview clip', description: 'Optional muted 4–6 second loop that plays when a visitor hovers the card. MP4 or WebM, 720p, under 3 MB. scripts/make-preview-clips.mjs can cut it from the Drive video.', type: 'file', options: { accept: 'video/mp4,video/webm' }, hidden: ({ document }) => document?.kind !== 'video' }),
     defineField({ name: 'videoFormat', group: 'video', title: 'Video format', description: 'Choose the actual video format; it is not detected from the Drive link. This controls the popup, while WORK covers keep a uniform grid.', type: 'string', initialValue: '16:9', options: { list: [{ title: 'Landscape (16:9)', value: '16:9' }, { title: 'Portrait (9:16)', value: '9:16' }, { title: 'Square (1:1)', value: '1:1' }, { title: 'Portrait (4:5)', value: '4:5' }] }, hidden: ({ document }) => document?.kind !== 'video' }),
   ],

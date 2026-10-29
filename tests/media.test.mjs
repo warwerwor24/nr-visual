@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { driveMedia, publishedProjects, socialUrl, whatsappUrl, videoAspectRatio } from '../src/lib/media.mjs';
+import { driveMedia, publishedProjects, socialUrl, whatsappUrl, videoAspectRatio, videoFileUrl } from '../src/lib/media.mjs';
 import { loadContent } from '../src/lib/content.mjs';
 import { coverPresentation } from '../src/lib/cover.mjs';
 
@@ -103,4 +103,10 @@ test('all projects includes unfeatured work, excludes drafts and validates its m
   photo.driveUrl = '';
   photo.kind = 'video';
   await assert.rejects(() => loadContent({ SANITY_STUDIO_PROJECT_ID: 'example' }), /Invalid Drive URL: Unfeatured/);
+});
+
+test('video file links accept public https mp4/webm only', () => {
+  assert.equal(videoFileUrl('https://pub-abc.r2.dev/work/clip.MP4'), 'https://pub-abc.r2.dev/work/clip.MP4');
+  assert.equal(videoFileUrl('https://media.example.com/a.webm?v=2'), 'https://media.example.com/a.webm?v=2');
+  for (const bad of ['http://pub-abc.r2.dev/a.mp4', 'https://user:pw@pub-abc.r2.dev/a.mp4', 'https://pub-abc.r2.dev/a.mov', 'javascript:alert(1)//.mp4', 'https://drive.google.com/file/d/abcdefghijk/view', '', null]) assert.equal(videoFileUrl(bad), null);
 });

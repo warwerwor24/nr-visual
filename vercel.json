@@ -25,7 +25,19 @@
       "permanent": false
     }
   ],
+  "rewrites": [
+    {
+      "source": "/video/:path*",
+      "destination": "https://pub-637bcb44e3c64a508b9a56620024f35a.r2.dev/video/:path*"
+    }
+  ],
   "headers": [
+    {
+      "source": "/video/:path*",
+      "headers": [
+        { "key": "x-vercel-enable-rewrite-caching", "value": "0" }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [

@@ -13,6 +13,15 @@ export function driveMedia(value) {
   } catch { return null; }
 }
 
+// Direct video file, e.g. a public Cloudflare R2 URL, played by the browser's own <video> player.
+export function videoFileUrl(value) {
+  if (typeof value !== 'string') return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && !url.username && !url.password && /\.(mp4|m4v|webm)$/i.test(url.pathname) ? url.href : null;
+  } catch { return null; }
+}
+
 export function videoAspectRatio(format) {
   const ratios = { '16:9': 16 / 9, '9:16': 9 / 16, '1:1': 1, '4:5': 4 / 5 };
   return Object.hasOwn(ratios, format) ? ratios[format] : 16 / 9;
