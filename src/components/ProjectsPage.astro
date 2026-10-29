@@ -16,7 +16,7 @@ const pageTitle = open ? `${open.title} | ${settings.brandName}` : `All projects
 const pageDescription = open?.description || `Explore all photography and film projects by ${settings.brandName}.`;
 const canonical = Astro.site && new URL(open ? Astro.url.pathname : '/projects/', Astro.site);
 // Each type opens a dropdown of its sub-categories; only those with at least one project are listed.
-// Photo stays hidden until there are enough albums to browse.
+// Photo shows "Coming soon" until there are enough albums to browse.
 const kinds = (['photo', 'video'] as const).map(kind => ({
   kind,
   label: kind === 'photo' ? 'Photo' : 'Video',
@@ -24,7 +24,7 @@ const kinds = (['photo', 'video'] as const).map(kind => ({
   subs: categories[kind]
     .map(item => ({ ...item, count: projects.filter(project => project.kind === kind && project.categories?.includes(item.value)).length }))
     .filter(item => item.count),
-})).filter(item => item.kind !== 'photo' || item.count >= 6);
+})).map(item => ({ ...item, soon: item.kind === 'photo' && item.count < 6 }));
 const icons = {
   photo: '<path d="M4 8h3l2-3h6l2 3h3v11H4Z" /><circle cx="12" cy="13" r="3.5" />',
   video: '<rect x="3" y="6" width="13" height="12" rx="2" /><path d="m16 10 5-3v10l-5-3Z" />',
@@ -69,10 +69,12 @@ const clientTitles = Object.fromEntries(clientNames.map(name => [clientSlug(name
               <input type="search" id="project-search" class="project-search" placeholder="Search projects" aria-label="Search projects by title, client or category" aria-controls="projects-grid" autocomplete="off" tabindex="-1" />
             </div>
             {kinds.map(item => <div class="kind-menu" data-kind={item.kind}>
-              <button type="button" class="tool-button" data-filter={item.kind} aria-pressed="false" aria-expanded="false" aria-controls={`${item.kind}-categories`} aria-label={`${item.label} projects (${item.count})`}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true" set:html={icons[item.kind]} /></button>
+              <button type="button" class="tool-button kind-toggle" data-filter={item.kind} data-soon={item.soon || undefined} aria-pressed="false" aria-expanded="false" aria-controls={`${item.kind}-categories`} aria-label={item.soon ? `${item.label} projects, coming soon` : `${item.label} projects (${item.count})`}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true" set:html={icons[item.kind]} /><svg class="kind-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></button>
               <div class="kind-dropdown" id={`${item.kind}-categories`} role="group" aria-label={`${item.label} categories`}>
+                {item.soon ? <p class="kind-soon">Coming soon</p> : <>
                 <button type="button" data-kind={item.kind} data-sub="all" data-title={`All ${item.label.toLowerCase()}s`} aria-pressed="false" aria-controls="projects-grid">All {item.label.toLowerCase()}s<span class="subfilter-count">{item.count}</span></button>
                 {item.subs.map(sub => <button type="button" data-kind={item.kind} data-sub={sub.value} data-title={sub.title} aria-pressed="false" aria-controls="projects-grid">{sub.title}<span class="subfilter-count">{sub.count}</span></button>)}
+                </>}
               </div>
             </div>)}
           </div>

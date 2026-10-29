@@ -101,12 +101,14 @@ function choose(nextKind: string, nextSub: string) {
 // Touch screens have no hover, so the first tap opens the dropdown instead.
 buttons.forEach(button => button.addEventListener('click', () => {
   const menu = button.closest('.kind-menu')!;
-  if (touch.matches && !menu.classList.contains('is-open')) {
+  if ((touch.matches || button.dataset.soon) && !menu.classList.contains('is-open')) {
     closeMenus(menu);
     menu.classList.add('is-open');
     button.setAttribute('aria-expanded', 'true');
     return;
   }
+  // A coming-soon type has nothing to filter yet.
+  if (button.dataset.soon) return;
   choose(button.dataset.filter!, 'all');
 }));
 menus.forEach(menu => {
@@ -186,3 +188,19 @@ if (!reducedMotion.matches) {
   slide('in').then(() => { clearAnimations(); queueParallax(); busy = false; });
 }
 grid.classList.add('is-ready');
+
+// Leaving for the homepage mirrors the entrance: the columns slide out, then the page changes.
+document.querySelectorAll<HTMLAnchorElement>('.site-header a').forEach(link => link.addEventListener('click', event => {
+  if (reducedMotion.matches || event.defaultPrevented || event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  if (new URL(link.href).pathname.startsWith('/projects')) return;
+  event.preventDefault();
+  busy = true;
+  closeMenus();
+  slide('out').then(() => { location.href = link.href; });
+}));
+// Back from the homepage restores this page from the cache with the tiles still slid out.
+window.addEventListener('pageshow', event => {
+  if (!event.persisted) return;
+  clearAnimations();
+  busy = false;
+});
